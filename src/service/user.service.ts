@@ -3,6 +3,7 @@ import { CreateUserDTO, LoginUserDTO } from "../dtos/user.dto";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config";
+import { HttpError } from "../error/http-error";
 
 let userRepository = new UserRepository();
 
@@ -11,7 +12,7 @@ export class UserService{
     const emailCheck = await userRepository.getUserByEmail(data.email);
 
     if(emailCheck) {
-      throw new Error("Email already in use"); 
+      throw new HttpError(403,"Email already in use"); 
     }
 
     const hashedPassword = await bcryptjs.hash(data.password, 10);
@@ -20,7 +21,7 @@ export class UserService{
     const usernameCheck = await userRepository.getUserByUsername(data.username);
 
     if(usernameCheck){
-      throw new Error("Username already in use")
+      throw new HttpError(403,"Username already in use")
     }
 
     const newUser = await userRepository.createUser(data);
@@ -31,12 +32,12 @@ export class UserService{
   async loginUser(data: LoginUserDTO){
     const user = await userRepository.getUserByEmail(data.email);
     if(!user) {
-      throw new Error("No user found")
+      throw new HttpError(404,"No user found")
     }
 
     const validPassword = await bcryptjs.compare(data.password, user.password);
     if(!validPassword){
-      throw new Error("Invalid Credentials")
+      throw new HttpError(401,"Invalid Credentials")
     }
 
     const payload = {
