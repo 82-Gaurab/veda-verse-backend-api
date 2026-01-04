@@ -4,6 +4,7 @@ import { UserSchema } from "../types/user.type";
 export const CreateUserDTO = UserSchema.pick({
   firstName: true,
   lastName: true,
+  username:true,
   email: true,
   password: true
 }).extend(
@@ -15,6 +16,8 @@ export const CreateUserDTO = UserSchema.pick({
     path: ['confirmPassword']
   }
 )
+
+export type CreateUserDTO = z.infer<typeof CreateUserDTO>;
 
 export const LoginUserDTO = z.object({
   email: z.email(),
