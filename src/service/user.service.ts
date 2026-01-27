@@ -51,4 +51,19 @@ export class UserService{
     const token = jwt.sign(payload, JWT_SECRET, {expiresIn: "30d"});
     return {token, user};
   }
+
+    async uploadProfilePicture(file: Express.Multer.File) {
+    if (!file) {
+    throw new Error("Please upload a file");
+  }
+
+  if (file.size > Number(process.env.MAX_FILE_UPLOAD)) {
+    throw new Error(
+      `Please upload an image less than ${process.env.MAX_FILE_UPLOAD} bytes`
+    );
+  }
+
+  const filename = await userRepository.uploadProfilePicture(file);
+  return filename;
+  }
 }

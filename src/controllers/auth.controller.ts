@@ -50,4 +50,20 @@ export class AuthController{
       )
     }
   }
+
+    async uploadProfilePicture(req: Request, res: Response){
+    try {
+      const file = req.file as Express.Multer.File;
+      const fileName = await userService.uploadProfilePicture(file);
+      res.status(200).json({
+      success: true,
+      message: "Photo uploaded successfully",
+      data: fileName,
+    });
+    } catch (error: Error | any) {
+      return res.status(error.statusCode ?? 500).json(
+        {success: false, message: error.message || "Internal Server Error"}
+      );
+    }
+  }
 }

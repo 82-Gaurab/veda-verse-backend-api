@@ -36,4 +36,8 @@ export class UserRepository implements IUserRepository {
     const result = await UserModel.findByIdAndDelete(id);
     return result? true : false
   }
+
+  async uploadProfilePicture(file: Express.Multer.File) {
+    return file.filename;
+  }
 }

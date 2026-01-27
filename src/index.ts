@@ -18,7 +18,7 @@ app.use(morgan("dev"));
 
 app.use(bodyParser.json());
 
-app.use('/api/auth', authRouter);
+app.use('/api/v1/auth', authRouter);
 
 async function startServer() {
   await connectDatabase();
