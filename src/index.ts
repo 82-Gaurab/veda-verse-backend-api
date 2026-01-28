@@ -7,6 +7,7 @@ import morgan from "morgan";
 
 import authRouter from "./routes/auth.route";
 import { connectDatabase } from "./database/mongodb";
+import path from "path";
 
 dotenv.config()
 const app : Application= express();
@@ -17,6 +18,11 @@ app.use(cors(corsOptions));
 app.use(morgan("dev"));
 
 app.use(bodyParser.json());
+
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "../uploads"))
+);
 
 app.use('/api/v1/auth', authRouter);
 
