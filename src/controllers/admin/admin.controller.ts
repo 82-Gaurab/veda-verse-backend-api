@@ -24,12 +24,10 @@ export class AdminUserController {
         .status(201)
         .json({ success: true, message: "User Created", data: newUser });
     } catch (error: Error | any) {
-      return res
-        .status(error.statusCode ?? 500)
-        .json({
-          success: false,
-          message: error.message || "Internal Server Error",
-        });
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
     }
   }
 
@@ -40,12 +38,10 @@ export class AdminUserController {
         .status(200)
         .json({ success: true, data: users, message: "All Users Retrieved" });
     } catch (error: Error | any) {
-      return res
-        .status(error.statusCode ?? 500)
-        .json({
-          success: false,
-          message: error.message || "Internal Server Error",
-        });
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
     }
   }
 
@@ -69,12 +65,10 @@ export class AdminUserController {
         .status(200)
         .json({ success: true, message: "User Updated", data: updatedUser });
     } catch (error: Error | any) {
-      return res
-        .status(error.statusCode ?? 500)
-        .json({
-          success: false,
-          message: error.message || "Internal Server Error",
-        });
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
     }
   }
 
@@ -89,12 +83,10 @@ export class AdminUserController {
       }
       return res.status(200).json({ success: true, message: "User Deleted" });
     } catch (error: Error | any) {
-      return res
-        .status(error.statusCode ?? 500)
-        .json({
-          success: false,
-          message: error.message || "Internal Server Error",
-        });
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
     }
   }
 
@@ -106,12 +98,10 @@ export class AdminUserController {
         .status(200)
         .json({ success: true, data: user, message: "Single User Retrieved" });
     } catch (error: Error | any) {
-      return res
-        .status(error.statusCode ?? 500)
-        .json({
-          success: false,
-          message: error.message || "Internal Server Error",
-        });
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
     }
   }
 }
