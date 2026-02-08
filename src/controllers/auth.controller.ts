@@ -22,12 +22,10 @@ export class AuthController {
         .status(200)
         .json({ success: true, message: "user created", data: newUser });
     } catch (error: Error | any) {
-      return res
-        .status(error.status ?? 500)
-        .json({
-          success: false,
-          message: error.message ?? "Internal server Error",
-        });
+      return res.status(error.status ?? 500).json({
+        success: false,
+        message: error.message ?? "Internal server Error",
+      });
     }
   }
 
@@ -43,21 +41,17 @@ export class AuthController {
       const userData: LoginUserDTO = parsedData.data;
       const { token, user } = await userService.loginUser(userData);
 
-      return res
-        .status(200)
-        .json({
-          success: true,
-          message: "Login successful",
-          data: user,
-          token,
-        });
+      return res.status(200).json({
+        success: true,
+        message: "Login successful",
+        data: user,
+        token,
+      });
     } catch (error: Error | any) {
-      return res
-        .status(error.status ?? 500)
-        .json({
-          success: false,
-          message: error.message || "Internal Server Error",
-        });
+      return res.status(error.status ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
     }
   }
 
@@ -85,20 +79,16 @@ export class AuthController {
 
       const updatedUser = await userService.updateUser(userId, updatePayload);
 
-      return res
-        .status(200)
-        .json({
-          success: true,
-          message: "User updated Successfully",
-          data: updatedUser,
-        });
+      return res.status(200).json({
+        success: true,
+        message: "User updated Successfully",
+        data: updatedUser,
+      });
     } catch (error: Error | any) {
-      return res
-        .status(error.statusCode ?? 500)
-        .json({
-          success: false,
-          message: error.message || "Internal Server Error",
-        });
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
     }
   }
 
@@ -112,12 +102,10 @@ export class AuthController {
         data: fileName,
       });
     } catch (error: Error | any) {
-      return res
-        .status(error.statusCode ?? 500)
-        .json({
-          success: false,
-          message: error.message || "Internal Server Error",
-        });
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
     }
   }
 }

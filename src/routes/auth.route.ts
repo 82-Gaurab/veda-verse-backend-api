@@ -13,9 +13,14 @@ router.put(
   "/update-profile",
   authorizedMiddleware,
   uploads.single("profilePicture"), // info: image => filename in form data
-  authController.updateUser
+  authController.updateUser,
 );
 
-router.post("/upload-image", authorizedMiddleware, uploads.single("profilePicture"), authController.uploadProfilePicture);
+router.post(
+  "/upload-image",
+  authorizedMiddleware,
+  uploads.single("profilePicture"),
+  authController.uploadProfilePicture,
+);
 
 export default router;

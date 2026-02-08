@@ -7,12 +7,12 @@ import { HttpError } from "../error/http-error";
 
 let userRepository = new UserRepository();
 
-export class UserService{
-  async createUser(data:CreateUserDTO) {
+export class UserService {
+  async createUser(data: CreateUserDTO) {
     const emailCheck = await userRepository.getUserByEmail(data.email);
 
-    if(emailCheck) {
-      throw new HttpError(403,"Email already in use"); 
+    if (emailCheck) {
+      throw new HttpError(403, "Email already in use");
     }
 
     const hashedPassword = await bcryptjs.hash(data.password, 10);
@@ -20,8 +20,8 @@ export class UserService{
 
     const usernameCheck = await userRepository.getUserByUsername(data.username);
 
-    if(usernameCheck){
-      throw new HttpError(403,"Username already in use")
+    if (usernameCheck) {
+      throw new HttpError(403, "Username already in use");
     }
 
     const newUser = await userRepository.createUser(data);
@@ -29,15 +29,15 @@ export class UserService{
     return newUser;
   }
 
-  async loginUser(data: LoginUserDTO){
+  async loginUser(data: LoginUserDTO) {
     const user = await userRepository.getUserByEmail(data.email);
-    if(!user) {
-      throw new HttpError(404,"No user found")
+    if (!user) {
+      throw new HttpError(404, "No user found");
     }
 
     const validPassword = await bcryptjs.compare(data.password, user.password);
-    if(!validPassword){
-      throw new HttpError(401,"Invalid Credentials")
+    if (!validPassword) {
+      throw new HttpError(401, "Invalid Credentials");
     }
 
     const payload = {
@@ -45,16 +45,16 @@ export class UserService{
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
-      role: user.role
-    }
+      role: user.role,
+    };
 
-    const token = jwt.sign(payload, JWT_SECRET, {expiresIn: "30d"});
-    return {token, user};
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "30d" });
+    return { token, user };
   }
 
-    async updateUser(id:string, data:UpdateUserDTO) {
+  async updateUser(id: string, data: UpdateUserDTO) {
     const user = await userRepository.getUserById(id);
-    if(!user) {
+    if (!user) {
       throw new HttpError(404, "User not found");
     }
     // if(user.email != data.email) {
@@ -70,27 +70,27 @@ export class UserService{
     //   }
     // }
 
-    if(data.password){
+    if (data.password) {
       const hashedPassword = await bcryptjs.hash(data.password, 10);
-      data.password   = hashedPassword;
+      data.password = hashedPassword;
     }
 
     const updatedUser = await userRepository.updateUser(id, data);
     return updatedUser;
   }
 
-    async uploadProfilePicture(file: Express.Multer.File) {
+  async uploadProfilePicture(file: Express.Multer.File) {
     if (!file) {
-    throw new Error("Please upload a file");
-  }
+      throw new Error("Please upload a file");
+    }
 
-  if (file.size > Number(process.env.MAX_FILE_UPLOAD)) {
-    throw new Error(
-      `Please upload an image less than ${process.env.MAX_FILE_UPLOAD} bytes`
-    );
-  }
+    if (file.size > Number(process.env.MAX_FILE_UPLOAD)) {
+      throw new Error(
+        `Please upload an image less than ${process.env.MAX_FILE_UPLOAD} bytes`,
+      );
+    }
 
-  const filename = await userRepository.uploadProfilePicture(file);
-  return filename;
+    const filename = await userRepository.uploadProfilePicture(file);
+    return filename;
   }
 }

@@ -39,12 +39,10 @@ export const authorizedMiddleware = async (
     req.user = user; // attach user info to req object
     return next();
   } catch (error: Error | any) {
-    return res
-      .status(error.statusCode ?? 500)
-      .json({
-        success: false,
-        message: error.message || "Internal Server Error",
-      });
+    return res.status(error.statusCode ?? 500).json({
+      success: false,
+      message: error.message || "Internal Server Error",
+    });
   }
 
   // if(req.headers && req.headers.authorization){
@@ -69,11 +67,9 @@ export const adminOnlyMiddleware = async (
     }
     return next();
   } catch (error: Error | any) {
-    return res
-      .status(error.statusCode ?? 500)
-      .json({
-        success: false,
-        message: error.message || "Internal Server Error",
-      });
+    return res.status(error.statusCode ?? 500).json({
+      success: false,
+      message: error.message || "Internal Server Error",
+    });
   }
 };
