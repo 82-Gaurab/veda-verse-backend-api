@@ -5,7 +5,11 @@ export interface IUserRepository {
   createUser(userData: Partial<IUser>): Promise<IUser>;
   getUserByEmail(email: string): Promise<IUser | null>;
   getUserByUsername(userName: string): Promise<IUser | null>;
-
+  getAllUsers(
+    page: number,
+    size: number,
+    search?: string,
+  ): Promise<{ users: IUser[]; total: number }>;
   getUserById(id: string): Promise<IUser | null>;
   updateUser(id: string, updatedData: Partial<IUser>): Promise<IUser | null>;
   deleteUser(id: string): Promise<boolean>;
