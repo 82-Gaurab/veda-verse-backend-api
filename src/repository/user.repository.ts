@@ -33,7 +33,7 @@ export class UserRepository implements IUserRepository {
     size: number,
     search?: string,
   ): Promise<{ users: IUser[]; total: number }> {
-    const filter: QueryFilter<IUser> = [];
+    const filter: QueryFilter<IUser> = {};
 
     if (search) {
       filter.$or = [

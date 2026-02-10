@@ -2,6 +2,7 @@ import { CreateUserDTO, UpdateUserDTO } from "../../dtos/user.dto";
 import { Request, Response, NextFunction } from "express";
 import z from "zod";
 import { AdminUserService } from "../../service/admin/admin.service";
+import { QueryParams } from "../../types/query.type";
 
 let adminUserService = new AdminUserService();
 
@@ -39,14 +40,12 @@ export class AdminUserController {
         size,
         search,
       );
-      return res
-        .status(200)
-        .json({
-          success: true,
-          data: users,
-          pagination: pagination,
-          message: "All Users Retrieved",
-        });
+      return res.status(200).json({
+        success: true,
+        data: users,
+        pagination: pagination,
+        message: "All Users Retrieved",
+      });
     } catch (error: Error | any) {
       return res.status(error.statusCode ?? 500).json({
         success: false,
