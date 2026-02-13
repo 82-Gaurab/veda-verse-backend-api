@@ -11,3 +11,13 @@ export async function connectDatabase() {
     process.exit(1);
   }
 }
+
+export async function connectDatabaseTest() {
+  try {
+    await mongoose.connect(MONGODB_URI + "_test");
+    console.log("Connected to test database");
+  } catch (error) {
+    console.error("Database error", error);
+    process.exit(1);
+  }
+}
