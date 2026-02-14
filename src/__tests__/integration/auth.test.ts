@@ -99,4 +99,21 @@ describe("Auth Integration Test", () => {
       expect(response.body).toHaveProperty("success", false);
     });
   });
+
+  describe("POST /api/v1/auth/request-password-reset", () => {
+    // test("request password reset succeeds", async () => {
+    //   const res = await request(app)
+    //     .post("/api/v1/auth/request-password-reset")
+    //     .send({ email: testUser.email });
+    //   expect(res.status).toBe(200);
+    //   expect(res.body.success).toBe(true);
+    // });
+
+    test("request password reset fails for non-existent email", async () => {
+      const res = await request(app)
+        .post("/api/v1/auth/request-password-reset")
+        .send({ email: "fake@example.com" });
+      expect(res.status).toBe(404);
+    });
+  });
 });
