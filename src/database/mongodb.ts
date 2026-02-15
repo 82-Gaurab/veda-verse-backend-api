@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import {MONGODB_URI} from "../config/index";
+import { MONGODB_URI } from "../config/index";
 
 // Info: Function to connect to database
 export async function connectDatabase() {
@@ -8,6 +8,16 @@ export async function connectDatabase() {
     console.log("Connected to Database", MONGODB_URI);
   } catch (error) {
     console.error("Database error: ", error);
+    process.exit(1);
+  }
+}
+
+export async function connectDatabaseTest() {
+  try {
+    await mongoose.connect(MONGODB_URI + "_test");
+    console.log("Connected to test database");
+  } catch (error) {
+    console.error("Database error", error);
     process.exit(1);
   }
 }

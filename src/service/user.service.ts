@@ -4,40 +4,41 @@ import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config";
 import { HttpError } from "../error/http-error";
+import { sendEmail } from "../config/email";
 
+const CLIENT_URL = process.env.CLIENT_URL as string;
 let userRepository = new UserRepository();
 
-export class UserService{
-  async createUser(data:CreateUserDTO) {
+export class UserService {
+  async createUser(data: CreateUserDTO) {
     const emailCheck = await userRepository.getUserByEmail(data.email);
 
-    if(emailCheck) {
-      throw new HttpError(403,"Email already in use"); 
+    if (emailCheck) {
+      throw new HttpError(403, "Email already in use");
     }
-
-    const hashedPassword = await bcryptjs.hash(data.password, 10);
-    data.password = hashedPassword;
 
     const usernameCheck = await userRepository.getUserByUsername(data.username);
 
-    if(usernameCheck){
-      throw new HttpError(403,"Username already in use")
+    if (usernameCheck) {
+      throw new HttpError(403, "Username already in use");
     }
+    const hashedPassword = await bcryptjs.hash(data.password, 10);
+    data.password = hashedPassword;
 
     const newUser = await userRepository.createUser(data);
 
     return newUser;
   }
 
-  async loginUser(data: LoginUserDTO){
+  async loginUser(data: LoginUserDTO) {
     const user = await userRepository.getUserByEmail(data.email);
-    if(!user) {
-      throw new HttpError(404,"No user found")
+    if (!user) {
+      throw new HttpError(404, "No user found");
     }
 
     const validPassword = await bcryptjs.compare(data.password, user.password);
-    if(!validPassword){
-      throw new HttpError(401,"Invalid Credentials")
+    if (!validPassword) {
+      throw new HttpError(401, "Invalid Credentials");
     }
 
     const payload = {
@@ -45,16 +46,16 @@ export class UserService{
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
-      role: user.role
-    }
+      role: user.role,
+    };
 
-    const token = jwt.sign(payload, JWT_SECRET, {expiresIn: "30d"});
-    return {token, user};
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "30d" });
+    return { token, user };
   }
 
-    async updateUser(id:string, data:UpdateUserDTO) {
+  async updateUser(id: string, data: UpdateUserDTO) {
     const user = await userRepository.getUserById(id);
-    if(!user) {
+    if (!user) {
       throw new HttpError(404, "User not found");
     }
     // if(user.email != data.email) {
@@ -70,27 +71,64 @@ export class UserService{
     //   }
     // }
 
-    if(data.password){
+    if (data.password) {
       const hashedPassword = await bcryptjs.hash(data.password, 10);
-      data.password   = hashedPassword;
+      data.password = hashedPassword;
     }
 
     const updatedUser = await userRepository.updateUser(id, data);
     return updatedUser;
   }
 
-    async uploadProfilePicture(file: Express.Multer.File) {
+  async uploadProfilePicture(file: Express.Multer.File) {
     if (!file) {
-    throw new Error("Please upload a file");
+      throw new Error("Please upload a file");
+    }
+
+    if (file.size > Number(process.env.MAX_FILE_UPLOAD)) {
+      throw new Error(
+        `Please upload an image less than ${process.env.MAX_FILE_UPLOAD} bytes`,
+      );
+    }
+
+    const filename = await userRepository.uploadProfilePicture(file);
+    return filename;
   }
 
-  if (file.size > Number(process.env.MAX_FILE_UPLOAD)) {
-    throw new Error(
-      `Please upload an image less than ${process.env.MAX_FILE_UPLOAD} bytes`
-    );
+  async sendResetPasswordEmail(email?: string) {
+    if (!email) {
+      throw new HttpError(404, "Email is required");
+    }
+
+    const user = await userRepository.getUserByEmail(email);
+
+    if (!user) {
+      throw new HttpError(404, "User not found");
+    }
+
+    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "1h" });
+    const resetLink = `${CLIENT_URL}/reset-password?token=${token}`;
+    const html = `<p>Click <a href="${resetLink}">here</a> to reset your password. This link will expire in 1 hour.</p>`;
+    await sendEmail(user.email, "Password Reset", html);
+    return user;
   }
 
-  const filename = await userRepository.uploadProfilePicture(file);
-  return filename;
+  async resetPassword(token?: string, newPassword?: string) {
+    try {
+      if (!token || !newPassword) {
+        throw new HttpError(400, "Token and new password are required");
+      }
+      const decoded: any = jwt.verify(token, JWT_SECRET);
+      const userId = decoded.id;
+      const user = await userRepository.getUserById(userId);
+      if (!user) {
+        throw new HttpError(404, "User not found");
+      }
+      const hashedPassword = await bcryptjs.hash(newPassword, 10);
+      await userRepository.updateUser(userId, { password: hashedPassword });
+      return user;
+    } catch (error) {
+      throw new HttpError(400, "Invalid or expired token");
+    }
   }
 }

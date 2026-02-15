@@ -4,29 +4,26 @@ import { UserSchema } from "../types/user.type";
 export const CreateUserDTO = UserSchema.pick({
   firstName: true,
   lastName: true,
-  username:true,
+  username: true,
   email: true,
   password: true,
-  profilePicture: true
-}).extend(
-  {confirmPassword: z.string().min(6)}
-).refine(
-  (data) => data.password === data.confirmPassword,
-  {
+  profilePicture: true,
+})
+  .extend({ confirmPassword: z.string().min(6) })
+  .refine((data) => data.password === data.confirmPassword, {
     message: "Password do not match",
-    path: ['confirmPassword']
-  }
-)
+    path: ["confirmPassword"],
+  });
 
 export type CreateUserDTO = z.infer<typeof CreateUserDTO>;
 
 export const LoginUserDTO = z.object({
   email: z.email(),
-  password: z.string().min(6)
+  password: z.string().min(6),
 });
 
 export type LoginUserDTO = z.infer<typeof LoginUserDTO>;
 
 // all fields optional for update
-export const UpdateUserDTO = UserSchema.partial(); 
+export const UpdateUserDTO = UserSchema.partial();
 export type UpdateUserDTO = z.infer<typeof UpdateUserDTO>;
