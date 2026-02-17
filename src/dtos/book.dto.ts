@@ -1,5 +1,11 @@
 import z from "zod";
 import { BookSchema } from "../types/book.type";
 
-export const CreateBookDTO = BookSchema.pick({ id: true, title: true });
+export const CreateBookDTO = BookSchema.pick({
+  title: true,
+  author: true,
+  price: true,
+  genre: true,
+  publishedYear: true,
+});
 export type CreateBookDTO = z.infer<typeof CreateBookDTO>;

@@ -3,9 +3,12 @@ import { BookType } from "../types/book.type";
 
 const BookSchema: Schema = new Schema<BookType>(
   {
-    id: { type: String, required: true },
     title: { type: String, required: true },
-    date: { type: String },
+    author: { type: String, required: true },
+    genre: { type: String },
+    price: { type: Number, required: true },
+    inStock: { type: Boolean, default: true },
+    publishedYear: { type: String },
   },
   {
     timestamps: true,
