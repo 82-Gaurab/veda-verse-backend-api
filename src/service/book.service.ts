@@ -6,25 +6,19 @@ import { BookType } from "../types/book.type";
 let bookRepository = new BookRepository();
 
 export class BookService {
-  createBook(data: CreateBookDTO) {
-    const newBook: BookType = { ...data };
-
-    const existingBook = bookRepository.getBookById(newBook.id);
-
-    if (existingBook) {
-      throw new HttpError(403, "Book ID already exists");
-    }
-
-    return bookRepository.createBook(newBook);
+  async createBook(bookData: CreateBookDTO) {
+    return bookRepository.createBook(bookData);
   }
 
-  getAllBooks() {
-    return bookRepository.getAllBooks().map((bk) => {
+  async getAllBooks() {
+    let receivedBooks = await bookRepository.getAllBooks();
+    let transformedBooks = receivedBooks.map((bk) => {
       return {
         ...bk,
         title: bk.title.toUpperCase(),
       };
     });
+    return transformedBooks;
   }
 
   getBookById(id: string) {

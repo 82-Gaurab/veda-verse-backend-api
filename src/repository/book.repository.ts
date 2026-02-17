@@ -1,25 +1,21 @@
-import { BookType } from "../types/book.type";
-
-export const book: BookType[] = [
-  { id: "B-1", title: "1984" },
-  { id: "B-2", title: "To kill a Mockingbird", date: "2015-12-10" },
-];
+import { IBook, BookModel } from "../models/book.model";
 
 export interface IBookRepository {
-  getAllBooks(): BookType[];
-  getBookById(id: string): BookType | undefined;
-  createBook(book: BookType): BookType;
+  getAllBooks(): Promise<IBook[]>;
+  getBookById(id: string): Promise<IBook | undefined>;
+  createBook(book: Partial<IBook>): Promise<IBook>;
 }
 
 export class BookRepository implements IBookRepository {
-  getAllBooks(): BookType[] {
-    return book;
+  async getAllBooks(): Promise<IBook[]> {
+    const books = await BookModel.find().lean();
+    return books;
   }
-  getBookById(id: string): BookType | undefined {
-    return book.find((bk) => bk.id === id);
+  getBookById(id: string): Promise<IBook | undefined> {
+    throw new Error("Method not implemented.");
   }
-  createBook(newBook: BookType): BookType {
-    book.push(newBook);
-    return newBook;
+  async createBook(bookData: Partial<IBook>): Promise<IBook> {
+    const book = new BookModel(bookData);
+    return await book.save();
   }
 }
