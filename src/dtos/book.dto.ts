@@ -6,6 +6,7 @@ export const CreateBookDTO = BookSchema.pick({
   author: true,
   price: true,
   genre: true,
+  stockAmount: true,
   publishedYear: true,
 });
 export type CreateBookDTO = z.infer<typeof CreateBookDTO>;
