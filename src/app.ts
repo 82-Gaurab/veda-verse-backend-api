@@ -23,7 +23,10 @@ app.use(morgan("dev"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use("/api/v1/uploads", express.static(path.join(__dirname, "../uploads")));
+app.use(
+  "/api/v1/uploads/users",
+  express.static(path.join(__dirname, "../uploads/users")),
+);
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/admin", adminRouter);

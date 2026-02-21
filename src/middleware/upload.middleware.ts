@@ -7,7 +7,7 @@ import { HttpError } from "../error/http-error";
 
 // Ensure the uploads directory exists
 // __dirname = current directory of this file
-const uploadDir = path.join(__dirname, "../../uploads");
+const uploadDir = path.join(__dirname, "../../uploads/users");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }

@@ -7,7 +7,11 @@ const BookSchema: Schema = new Schema<BookType>(
     author: { type: String, required: true },
     genre: { type: String },
     price: { type: Number, required: true },
-    inStock: { type: Boolean, default: true },
+    stockAmount: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
     publishedYear: { type: String },
   },
   {

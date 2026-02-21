@@ -17,7 +17,7 @@ export class AdminUserController {
           .json({ success: false, message: z.prettifyError(parsedData.error) });
       }
       if (req.file) {
-        parsedData.data.profilePicture = `/uploads/${req.file.filename}`;
+        parsedData.data.profilePicture = `/uploads/users/${req.file.filename}`;
       }
       const userData: CreateUserDTO = parsedData.data;
       const newUser = await adminUserService.createUser(userData);

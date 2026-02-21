@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { UserService } from "../service/user.service";
 import { CreateUserDTO, LoginUserDTO, UpdateUserDTO } from "../dtos/user.dto";
-import z, { success } from "zod";
+import z from "zod";
 
 let userService = new UserService();
 export class AuthController {
@@ -74,7 +74,7 @@ export class AuthController {
 
       // file comes from req.file
       if (req.file) {
-        updatePayload.profilePicture = `/uploads/${req.file.filename}`;
+        updatePayload.profilePicture = `/uploads/users/${req.file.filename}`;
       }
 
       const updatedUser = await userService.updateUser(userId, updatePayload);

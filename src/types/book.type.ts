@@ -5,7 +5,7 @@ export const BookSchema = z.object({
   author: z.string().min(1, { message: "Book author is required" }),
   genre: z.string().optional(),
   price: z.number().min(1, { message: "Book must have a price" }),
-  inStock: z.boolean().default(true),
+  stockAmount: z.number().int().min(0, { message: "Stock cannot be negative" }),
   publishedYear: z.string().optional(),
 });
 
