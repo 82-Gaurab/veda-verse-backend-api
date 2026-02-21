@@ -18,4 +18,14 @@ export class BookRepository implements IBookRepository {
     const book = new BookModel(bookData);
     return await book.save();
   }
+
+  async getBookByTitle(title: string): Promise<IBook | null> {
+    const user = await BookModel.findOne({ title: title });
+    return user;
+  }
+
+  async deleteBook(id: string): Promise<boolean> {
+    const result = await BookModel.findByIdAndDelete(id);
+    return result ? true : false;
+  }
 }
