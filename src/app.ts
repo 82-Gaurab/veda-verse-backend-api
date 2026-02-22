@@ -9,6 +9,7 @@ import path from "path";
 import authRouter from "./routes/auth.route";
 import adminRouter from "./routes/admin/admin.route";
 import bookRouter from "./routes/book.route";
+import messageRouter from "./routes/message.route";
 
 dotenv.config();
 const app: Application = express();
@@ -31,5 +32,6 @@ app.use(
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/books", bookRouter);
+app.use("/api/v1/messages", messageRouter);
 
 export default app;

@@ -6,14 +6,19 @@ import {
 import { AdminUserController } from "../../controllers/admin/admin.controller";
 import { userUploads } from "../../middleware/upload.middleware";
 import { AdminBookController } from "../../controllers/admin/book.controller";
+import { MessageController } from "../../controllers/message.controller";
 
 let adminUserController = new AdminUserController();
 let adminBookController = new AdminBookController();
+let messageController = new MessageController();
 
 const router = Router();
 
 router.use(authorizedMiddleware);
 router.use(adminOnlyMiddleware);
+
+// info: Messages Routes
+router.get("/messages", messageController.getAll);
 
 // info: User Routes
 router.get("/users", adminUserController.getAllUsers);
