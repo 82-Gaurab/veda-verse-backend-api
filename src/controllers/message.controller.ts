@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { CreateMessageDTO } from "../dtos/message.dto";
 import { MessageService } from "../service/message.service";
 import z from "zod";
+import { QueryParams } from "../types/query.type";
 
 const messageService = new MessageService();
 
@@ -33,12 +34,12 @@ export class MessageController {
 
   async getAll(req: Request, res: Response) {
     try {
-      const { page, size, search } = req.query;
+      const { page, size, search }: QueryParams = req.query;
 
       const { messages, pagination } = await messageService.getAllMessages(
-        page as string,
-        size as string,
-        search as string,
+        page,
+        size,
+        search,
       );
 
       return res.status(200).json({
