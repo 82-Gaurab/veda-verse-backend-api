@@ -133,10 +133,10 @@ export class UserService {
       throw new HttpError(400, "Invalid or expired token");
     }
   }
-  async resetPasswordOTP(otp?: string, email?: string, newPassword?: string) {
+  async resetPasswordOTP(email?: string, newPassword?: string) {
     try {
-      if (!otp || !newPassword || !email) {
-        throw new HttpError(400, "OTP, email and new password are required");
+      if (!newPassword || !email) {
+        throw new HttpError(400, "email and new password are required");
       }
       const user = await userRepository.getUserByEmail(email);
       const userId = `${user?._id}`;

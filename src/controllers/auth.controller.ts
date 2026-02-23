@@ -161,8 +161,8 @@ export class AuthController {
   }
   async resetPasswordOTP(req: Request, res: Response) {
     try {
-      const { newPassword, otp, email } = req.body;
-      await userService.resetPasswordOTP(otp, email, newPassword);
+      const { newPassword, email } = req.body;
+      await userService.resetPasswordOTP(email, newPassword);
       return res.status(200).json({
         success: true,
         message: "Password has been reset successfully.",
