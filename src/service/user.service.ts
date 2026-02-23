@@ -58,18 +58,6 @@ export class UserService {
     if (!user) {
       throw new HttpError(404, "User not found");
     }
-    // if(user.email != data.email) {
-    //   const emailCheck = await userRepository.getUserByEmail(data.email!);
-    //   if(!emailCheck) {
-    //     throw new HttpError(403, "Email already in use");
-    //   }
-    // }
-    // if(user.username != data.username) {
-    //   const usernameCheck = await userRepository.getUserByUsername(data.username!);
-    //   if(!usernameCheck) {
-    //     throw new HttpError(403, "Username already in use");
-    //   }
-    // }
 
     if (data.password) {
       const hashedPassword = await bcryptjs.hash(data.password, 10);

@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document } from "mongoose";
-import { OrderType } from "../types/order.type";
 
 const OrderSchema: Schema = new Schema(
   {

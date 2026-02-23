@@ -7,10 +7,12 @@ import { AdminUserController } from "../../controllers/admin/admin.controller";
 import { userUploads } from "../../middleware/upload.middleware";
 import { AdminBookController } from "../../controllers/admin/book.controller";
 import { MessageController } from "../../controllers/message.controller";
+import { GenreController } from "../../controllers/genre.controller";
 
 let adminUserController = new AdminUserController();
 let adminBookController = new AdminBookController();
 let messageController = new MessageController();
+let genreController = new GenreController();
 
 const router = Router();
 
@@ -19,6 +21,11 @@ router.use(adminOnlyMiddleware);
 
 // info: Messages Routes
 router.get("/messages", messageController.getAll);
+
+// info: Genres Routes
+router.get("/genres", genreController.getAllPaginated);
+router.put("/genres/:id", genreController.updateGenre);
+router.delete("/genres/:id", genreController.deleteGenre);
 
 // info: User Routes
 router.get("/users", adminUserController.getAllUsers);
