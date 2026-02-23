@@ -4,7 +4,7 @@ import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config";
 import { HttpError } from "../error/http-error";
-import { sendEmail } from "../config/email";
+import { sendEmail, sendOTPEmail } from "../config/email";
 
 const CLIENT_URL = process.env.CLIENT_URL as string;
 let userRepository = new UserRepository();
@@ -101,6 +101,20 @@ export class UserService {
     return user;
   }
 
+  async sendResetPasswordOTPEmail(email?: string) {
+    if (!email) {
+      throw new HttpError(404, "Email is required");
+    }
+
+    const user = await userRepository.getUserByEmail(email);
+    if (!user) {
+      throw new HttpError(404, "User not found");
+    }
+
+    const otp = await sendOTPEmail(user.email);
+    return otp;
+  }
+
   async resetPassword(token?: string, newPassword?: string) {
     try {
       if (!token || !newPassword) {
@@ -109,6 +123,23 @@ export class UserService {
       const decoded: any = jwt.verify(token, JWT_SECRET);
       const userId = decoded.id;
       const user = await userRepository.getUserById(userId);
+      if (!user) {
+        throw new HttpError(404, "User not found");
+      }
+      const hashedPassword = await bcryptjs.hash(newPassword, 10);
+      await userRepository.updateUser(userId, { password: hashedPassword });
+      return user;
+    } catch (error) {
+      throw new HttpError(400, "Invalid or expired token");
+    }
+  }
+  async resetPasswordOTP(otp?: string, email?: string, newPassword?: string) {
+    try {
+      if (!otp || !newPassword || !email) {
+        throw new HttpError(400, "OTP, email and new password are required");
+      }
+      const user = await userRepository.getUserByEmail(email);
+      const userId = `${user?._id}`;
       if (!user) {
         throw new HttpError(404, "User not found");
       }

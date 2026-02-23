@@ -126,11 +126,43 @@ export class AuthController {
     }
   }
 
+  async sendResetPasswordOTPEmail(req: Request, res: Response) {
+    try {
+      const email = req.body.email;
+      const otp = await userService.sendResetPasswordOTPEmail(email);
+      return res.status(200).json({
+        success: true,
+        data: otp,
+        message: "If the email is registered, a reset OTP has been sent.",
+      });
+    } catch (error: Error | any) {
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
+    }
+  }
+
   async resetPassword(req: Request, res: Response) {
     try {
       const token = req.params.token;
       const { newPassword } = req.body;
       await userService.resetPassword(token, newPassword);
+      return res.status(200).json({
+        success: true,
+        message: "Password has been reset successfully.",
+      });
+    } catch (error: Error | any) {
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
+    }
+  }
+  async resetPasswordOTP(req: Request, res: Response) {
+    try {
+      const { newPassword, otp, email } = req.body;
+      await userService.resetPasswordOTP(otp, email, newPassword);
       return res.status(200).json({
         success: true,
         message: "Password has been reset successfully.",

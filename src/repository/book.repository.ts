@@ -8,7 +8,10 @@ export interface IBookRepository {
 
 export class BookRepository implements IBookRepository {
   async getAllBooks(): Promise<IBook[]> {
-    const books = await BookModel.find().lean();
+    const books = await BookModel.find()
+      .populate("genre", "name")
+      .lean()
+      .exec();
     return books;
   }
   getBookById(id: string): Promise<IBook | undefined> {

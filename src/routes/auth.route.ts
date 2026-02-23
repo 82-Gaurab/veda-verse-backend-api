@@ -26,4 +26,11 @@ router.post(
 router.post("/request-password-reset", authController.sendResetPasswordEmail);
 router.post("/reset-password/:token", authController.resetPassword);
 
+router.post(
+  "/request-password-reset-otp",
+  authController.sendResetPasswordOTPEmail,
+);
+
+router.post("/reset-password-otp", authController.resetPasswordOTP);
+
 export default router;

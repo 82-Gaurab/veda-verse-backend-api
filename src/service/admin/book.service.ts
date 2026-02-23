@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { CreateBookDTO } from "../../dtos/book.dto";
 import { HttpError } from "../../error/http-error";
 import { BookRepository } from "../../repository/book.repository";
@@ -10,18 +11,22 @@ export class AdminBookService {
     if (bookCheck) {
       throw new HttpError(403, "Book already exists");
     }
-    const newBook = bookRepository.createBook(bookData);
+    const formattedData = {
+      ...bookData,
+      genre: bookData.genre?.map((id) => new mongoose.Types.ObjectId(id)) || [],
+    };
+    const newBook = bookRepository.createBook(formattedData);
     return newBook;
   }
 
   async getAllBooks() {
     let receivedBooks = await bookRepository.getAllBooks();
-    let transformedBooks = receivedBooks.map((bk) => {
-      return {
-        ...bk,
-        title: bk.title.toUpperCase(),
-      };
-    });
+    const transformedBooks = receivedBooks.map((bk) => ({
+      ...bk,
+      title: bk.title.toUpperCase(),
+      genre: bk.genre.map((g: any) => g.name), // extract genre names
+    }));
+
     return transformedBooks;
   }
   async deleteBook(id: string) {
