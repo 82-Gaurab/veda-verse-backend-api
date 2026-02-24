@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
-import { CreateBookDTO } from "../../dtos/book.dto";
+import { CreateBookDTO, UpdateBookDTO } from "../../dtos/book.dto";
 import { HttpError } from "../../error/http-error";
 import { BookRepository } from "../../repository/book.repository";
 import { GenreRepository } from "../../repository/genre.repository";
 import { IBook } from "../../models/book.model";
+import { GenreModel } from "../../models/genre.model";
 
 const bookRepository = new BookRepository();
 let genreRepository = new GenreRepository();
@@ -75,5 +76,50 @@ export class AdminBookService {
     }
     const deleted = await bookRepository.deleteBook(id);
     return deleted;
+  }
+
+  async getBookById(id: string) {
+    const book = await bookRepository.getBookById(id);
+    if (!book) throw new HttpError(404, "No book of such Id");
+
+    const bookObj = book.toObject();
+    bookObj.genre = bookObj.genre.map((g: any) => g.name);
+
+    return bookObj;
+  }
+
+  async updateBook(id: string, updateData: UpdateBookDTO) {
+    const book = await bookRepository.getBookById(id);
+    if (!book) throw new HttpError(404, "Book not found");
+
+    let genreIds: mongoose.Types.ObjectId[] | undefined;
+
+    if (updateData.genre && updateData.genre.length > 0) {
+      const existingGenres = await GenreModel.find({
+        name: { $in: updateData.genre },
+      });
+
+      if (existingGenres.length !== updateData.genre.length) {
+        const existingNames = existingGenres.map((g) => g.name);
+        const missing = updateData.genre.filter(
+          (name) => !existingNames.includes(name),
+        );
+        throw new HttpError(400, `Genre(s) not found: ${missing.join(", ")}`);
+      }
+
+      genreIds = existingGenres.map((g) => g._id);
+    }
+
+    // Destructure updateData without genre
+    const { genre, ...rest } = updateData;
+
+    const updatedData: Partial<IBook> = {
+      ...rest, // safe fields
+      ...(genreIds ? { genre: genreIds } : {}), // only ObjectId[] for genre
+    };
+
+    const updatedBook = await bookRepository.updateBook(id, updatedData);
+
+    return updatedBook;
   }
 }

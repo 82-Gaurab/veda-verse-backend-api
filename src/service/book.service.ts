@@ -55,10 +55,13 @@ export class BookService {
     return transformedBooks;
   }
 
-  getBookById(id: string) {
-    const book = bookRepository.getBookById(id);
-    if (book === undefined) {
-      throw new HttpError(404, "No book of such Id");
-    }
+  async getBookById(id: string) {
+    const book = await bookRepository.getBookById(id);
+    if (!book) throw new HttpError(404, "No book of such Id");
+
+    const bookObj = book.toObject();
+    bookObj.genre = bookObj.genre.map((g: any) => g.name);
+
+    return bookObj;
   }
 }

@@ -1,10 +1,10 @@
 import mongoose, { Document, Schema } from "mongoose";
-import { BookType } from "../types/book.type";
 
 const BookSchema: Schema = new Schema(
   {
     title: { type: String, required: true },
     author: { type: String, required: true },
+    description: { type: String, required: true },
     genre: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -29,6 +29,7 @@ export interface IBook extends Document {
   _id: mongoose.Types.ObjectId;
   title: string;
   author: string;
+  description: string;
   genre: mongoose.Types.ObjectId[];
   price: number;
   stockAmount: number;

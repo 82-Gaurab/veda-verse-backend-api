@@ -31,6 +31,10 @@ app.use(
   "/api/v1/uploads/users",
   express.static(path.join(__dirname, "../uploads/users")),
 );
+app.use(
+  "/api/v1/uploads/books",
+  express.static(path.join(__dirname, "../uploads/books")),
+);
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/admin", adminRouter);

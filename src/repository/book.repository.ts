@@ -3,11 +3,16 @@ import { IBook, BookModel } from "../models/book.model";
 
 export interface IBookRepository {
   getAllBooks(): Promise<IBook[]>;
-  getBookById(id: string): Promise<IBook | undefined>;
+  getBookById(id: string): Promise<IBook | null>;
   createBook(book: Partial<IBook>): Promise<IBook>;
 }
 
 export class BookRepository implements IBookRepository {
+  // info: get book by id
+  async getBookById(id: string): Promise<IBook | null> {
+    const book = await BookModel.findById(id).populate("genre", "name");
+    return book;
+  }
   // info: get all for admin
   async getAllBooksPaginated(
     page: number,
@@ -42,15 +47,10 @@ export class BookRepository implements IBookRepository {
     return { books, total };
   }
   async getAllBooks(): Promise<IBook[]> {
-    const books = await BookModel.find()
-      .populate("genre", "name")
-      .lean()
-      .exec();
+    const books = await BookModel.find().populate("Book", "name").lean().exec();
     return books;
   }
-  getBookById(id: string): Promise<IBook | undefined> {
-    throw new Error("Method not implemented.");
-  }
+
   async createBook(bookData: Partial<IBook>): Promise<IBook> {
     const book = new BookModel(bookData);
     return await book.save();
@@ -68,5 +68,15 @@ export class BookRepository implements IBookRepository {
   //info: get by multiple ids
   async getBookByIds(ids: string[]): Promise<IBook[]> {
     return await BookModel.find({ _id: { $in: ids } });
+  }
+  // info: update book
+  async updateBook(
+    id: string,
+    updatedData: Partial<IBook>,
+  ): Promise<IBook | null> {
+    const updatedBook = await BookModel.findByIdAndUpdate(id, updatedData, {
+      new: true,
+    });
+    return updatedBook;
   }
 }

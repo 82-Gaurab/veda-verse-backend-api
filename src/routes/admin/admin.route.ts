@@ -66,5 +66,6 @@ router.post(
 router.get("/books", adminBookController.getAllPaginated);
 router.post("/books", adminBookController.createBook);
 router.delete("/books/:id", adminBookController.deleteBook);
+router.put("/books/:id", adminBookController.updateBook);
 
 export default router;

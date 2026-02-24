@@ -1,4 +1,4 @@
-import { CreateBookDTO } from "../../dtos/book.dto";
+import { CreateBookDTO, UpdateBookDTO } from "../../dtos/book.dto";
 import { Request, Response } from "express";
 import z from "zod";
 import { AdminBookService } from "../../service/admin/book.service";
@@ -86,6 +86,45 @@ export class AdminBookController {
       return res.status(error.statusCode ?? 500).json({
         success: false,
         message: error.message || "Internal Server Error",
+      });
+    }
+  }
+
+  async updateBook(req: Request, res: Response): Promise<Response> {
+    try {
+      const bookId = req.params.id;
+
+      const parsedBody = {
+        ...req.body,
+        price: Number(req.body.price),
+        stockAmount: Number(req.body.stockAmount),
+        genre: Array.isArray(req.body.genre)
+          ? req.body.genre
+          : req.body.genre
+            ? [req.body.genre]
+            : [],
+      };
+      const parsedData = UpdateBookDTO.safeParse(parsedBody);
+      if (!parsedData.success) {
+        return res.status(400).json({
+          success: false,
+          error: z.prettifyError(parsedData.error),
+        });
+      }
+
+      const updateData = parsedData.data;
+
+      const updatedBook = await adminBookService.updateBook(bookId, updateData);
+
+      return res.status(200).json({
+        success: true,
+        message: "Book Updated Successfully",
+        data: updatedBook,
+      });
+    } catch (error: Error | any) {
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message ?? "Internal Server Error",
       });
     }
   }
