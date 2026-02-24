@@ -7,7 +7,10 @@ export class MessageRepository {
     const message = new MessageModel(data);
     return await message.save();
   }
-
+  async deleteMessage(id: string): Promise<boolean> {
+    const result = await MessageModel.findByIdAndDelete(id);
+    return result ? true : false;
+  }
   async getAllMessages(
     page: number,
     size: number,

@@ -21,6 +21,20 @@ export class GenreRepository {
     return genre;
   }
 
+  // info: get genres by multiple ids
+  async getGenresByIds(ids: string[]): Promise<IGenre[]> {
+    return await GenreModel.find({ _id: { $in: ids } });
+  }
+
+  // info: get genres by multiple names
+  async getGenresByNames(names: string[]): Promise<IGenre[]> {
+    const genres = await GenreModel.find({
+      name: { $in: names },
+    });
+
+    return genres;
+  }
+
   // info: get all for admin
   async getAllGenresPaginated(
     page: number,

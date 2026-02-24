@@ -31,6 +31,25 @@ export class MessageController {
       });
     }
   }
+  async deleteMessage(req: Request, res: Response) {
+    try {
+      const messageId = req.params.id;
+      const deleted = await messageService.deleteMessage(messageId);
+      if (!deleted) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Message not found" });
+      }
+      return res
+        .status(200)
+        .json({ success: true, message: "Message Deleted" });
+    } catch (error: Error | any) {
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
+    }
+  }
 
   async getAll(req: Request, res: Response) {
     try {

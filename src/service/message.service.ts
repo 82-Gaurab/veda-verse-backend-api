@@ -7,6 +7,10 @@ export class MessageService {
   async createMessage(data: CreateMessageDTO): Promise<IMessage> {
     return await messageRepository.create(data);
   }
+  async deleteMessage(id: string) {
+    const deleted = await messageRepository.deleteMessage(id);
+    return deleted;
+  }
 
   async getAllMessages(
     page?: string,

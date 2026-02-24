@@ -18,6 +18,7 @@ const BookSchema: Schema = new Schema(
       min: 0,
     },
     publishedYear: { type: String },
+    coverImg: { type: String, required: false },
   },
   {
     timestamps: true,
@@ -32,6 +33,7 @@ export interface IBook extends Document {
   price: number;
   stockAmount: number;
   publishedYear?: string;
+  coverImg: string;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { CreateBookDTO } from "../dtos/book.dto";
 import { HttpError } from "../error/http-error";
-import { BookModel } from "../models/book.model";
+import { BookModel, IBook } from "../models/book.model";
 import { GenreModel } from "../models/genre.model";
 import { BookRepository } from "../repository/book.repository";
 
@@ -32,11 +32,9 @@ export class BookService {
           `Genre(s) not found: ${missingGenres.join(", ")}`,
         );
       }
-
       // Extract ObjectIds
       genreIds = existingGenres.map((g) => g._id as mongoose.Types.ObjectId);
     }
-
     // Create book with validated genreIds
     const newBook = await BookModel.create({
       ...bookData,

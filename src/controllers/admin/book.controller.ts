@@ -2,6 +2,7 @@ import { CreateBookDTO } from "../../dtos/book.dto";
 import { Request, Response } from "express";
 import z from "zod";
 import { AdminBookService } from "../../service/admin/book.service";
+import { QueryParams } from "../../types/query.type";
 
 let adminBookService = new AdminBookService();
 
@@ -14,6 +15,9 @@ export class AdminBookController {
         return res
           .status(404)
           .json({ error: z.prettifyError(parsedData.error) });
+      }
+      if (req.file) {
+        parsedData.data.coverImg = `/uploads/books/${req.file.filename}`;
       }
 
       const bookData: CreateBookDTO = parsedData.data;
@@ -33,18 +37,27 @@ export class AdminBookController {
     }
   }
 
-  async getAllBooks(req: Request, res: Response) {
+  // info: Get All paginated
+  async getAllPaginated(req: Request, res: Response) {
     try {
-      const books = await adminBookService.getAllBooks();
+      const { page, size, search }: QueryParams = req.query;
+
+      const { books, pagination } = await adminBookService.getAllBookPaginated(
+        page,
+        size,
+        search,
+      );
+
       return res.status(200).json({
         success: true,
-        message: "All book retrieved successfully",
         data: books,
+        pagination: pagination,
+        message: "All Reviews Retrieved",
       });
     } catch (error: Error | any) {
       return res.status(error.statusCode ?? 500).json({
         success: false,
-        message: error.message ?? "Internal Server Error",
+        message: error.message || "Internal Server Error",
       });
     }
   }

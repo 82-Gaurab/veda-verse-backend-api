@@ -113,4 +113,4 @@ const createUpload = (subFolder: string) => {
 };
 
 export const userUploads = createUpload("users");
-export const productUploads = createUpload("product");
+export const bookUploads = createUpload("books");

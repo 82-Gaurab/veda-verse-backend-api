@@ -4,17 +4,19 @@ import {
   authorizedMiddleware,
 } from "../../middleware/authorized.middleware";
 import { AdminUserController } from "../../controllers/admin/admin.controller";
-import { userUploads } from "../../middleware/upload.middleware";
+import { bookUploads, userUploads } from "../../middleware/upload.middleware";
 import { AdminBookController } from "../../controllers/admin/book.controller";
 import { MessageController } from "../../controllers/message.controller";
 import { GenreController } from "../../controllers/genre.controller";
 import { ReviewController } from "../../controllers/review.controller";
+import { OrderController } from "../../controllers/order.controller";
 
 let adminUserController = new AdminUserController();
 let adminBookController = new AdminBookController();
 let messageController = new MessageController();
 let genreController = new GenreController();
 let reviewController = new ReviewController();
+let orderController = new OrderController();
 
 const router = Router();
 
@@ -23,11 +25,18 @@ router.use(adminOnlyMiddleware);
 
 // info: Messages Routes
 router.get("/messages", messageController.getAll);
+router.delete("/messages/:id", messageController.deleteMessage);
 
 // info: Review Routes
 router.get("/reviews", reviewController.getAllPaginated);
 
+// info: Order Routes
+router.get("/orders", orderController.getAllOrders);
+router.delete("/orders/:id", orderController.deleteOrder);
+router.put("/orders/:id", orderController.updateOrder);
+
 // info: Genres Routes
+router.post("/genres", genreController.create);
 router.get("/genres", genreController.getAllPaginated);
 router.put("/genres/:id", genreController.updateGenre);
 router.delete("/genres/:id", genreController.deleteGenre);
@@ -48,7 +57,12 @@ router.post(
 router.delete("/users/:id", adminUserController.deleteUser);
 
 //info: Book Routes
-router.get("/books", adminBookController.getAllBooks);
+router.post(
+  "/",
+  bookUploads.single("coverImg"),
+  adminBookController.createBook,
+);
+router.get("/books", adminBookController.getAllPaginated);
 router.post("/books", adminBookController.createBook);
 router.delete("/books/:id", adminBookController.deleteBook);
 

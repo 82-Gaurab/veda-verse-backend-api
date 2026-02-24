@@ -1,3 +1,4 @@
+import { QueryFilter } from "mongoose";
 import { IBook, BookModel } from "../models/book.model";
 
 export interface IBookRepository {
@@ -7,6 +8,32 @@ export interface IBookRepository {
 }
 
 export class BookRepository implements IBookRepository {
+  // info: get all for admin
+  async getAllBooksPaginated(
+    page: number,
+    size: number,
+    search?: string,
+  ): Promise<{ books: IBook[]; total: number }> {
+    const filter: QueryFilter<IBook> = {};
+
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { author: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const [books, total] = await Promise.all([
+      BookModel.find(filter)
+        .populate("genre", "name")
+        .sort({ createdAt: -1 }) // newest first
+        .skip((page - 1) * size)
+        .limit(size),
+      BookModel.countDocuments(filter),
+    ]);
+
+    return { books, total };
+  }
   async getAllBooks(): Promise<IBook[]> {
     const books = await BookModel.find()
       .populate("genre", "name")
@@ -23,12 +50,16 @@ export class BookRepository implements IBookRepository {
   }
 
   async getBookByTitle(title: string): Promise<IBook | null> {
-    const user = await BookModel.findOne({ title: title });
-    return user;
+    const book = await BookModel.findOne({ title: title });
+    return book;
   }
 
   async deleteBook(id: string): Promise<boolean> {
     const result = await BookModel.findByIdAndDelete(id);
     return result ? true : false;
+  }
+  //info: get by multiple ids
+  async getBookByIds(ids: string[]): Promise<IBook[]> {
+    return await BookModel.find({ _id: { $in: ids } });
   }
 }

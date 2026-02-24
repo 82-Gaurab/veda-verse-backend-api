@@ -9,6 +9,7 @@ export const BookSchema = z.object({
     .number()
     .min(0, { message: "Stock Amount must at least be 0" }),
   publishedYear: z.string().optional(),
+  coverImg: z.string(),
 });
 
 export type BookType = z.infer<typeof BookSchema>;
