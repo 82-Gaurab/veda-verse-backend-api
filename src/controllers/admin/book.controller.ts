@@ -9,7 +9,17 @@ let adminBookService = new AdminBookService();
 export class AdminBookController {
   async createBook(req: Request, res: Response) {
     try {
-      const parsedData = CreateBookDTO.safeParse(req.body);
+      const parsedBody = {
+        ...req.body,
+        price: Number(req.body.price),
+        stockAmount: Number(req.body.stockAmount),
+        genre: Array.isArray(req.body.genre)
+          ? req.body.genre
+          : req.body.genre
+            ? [req.body.genre]
+            : [],
+      };
+      const parsedData = CreateBookDTO.safeParse(parsedBody);
 
       if (!parsedData.success) {
         return res

@@ -1,4 +1,4 @@
-import { QueryFilter } from "mongoose";
+import { QueryFilter, Types } from "mongoose";
 import { IBook, BookModel } from "../models/book.model";
 
 export interface IBookRepository {
@@ -17,16 +17,23 @@ export class BookRepository implements IBookRepository {
     const filter: QueryFilter<IBook> = {};
 
     if (search) {
-      filter.$or = [
+      const orConditions: any[] = [
         { title: { $regex: search, $options: "i" } },
         { author: { $regex: search, $options: "i" } },
       ];
+
+      // Only add _id filter if valid ObjectId
+      if (Types.ObjectId.isValid(search)) {
+        orConditions.push({ _id: new Types.ObjectId(search) });
+      }
+
+      filter.$or = orConditions;
     }
 
     const [books, total] = await Promise.all([
       BookModel.find(filter)
         .populate("genre", "name")
-        .sort({ createdAt: -1 }) // newest first
+        .sort({ createdAt: -1 })
         .skip((page - 1) * size)
         .limit(size),
       BookModel.countDocuments(filter),

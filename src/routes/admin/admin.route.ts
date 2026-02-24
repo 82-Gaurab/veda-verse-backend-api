@@ -38,6 +38,7 @@ router.put("/orders/:id", orderController.updateOrder);
 // info: Genres Routes
 router.post("/genres", genreController.create);
 router.get("/genres", genreController.getAllPaginated);
+router.get("/genres/all", genreController.getAllGenres);
 router.put("/genres/:id", genreController.updateGenre);
 router.delete("/genres/:id", genreController.deleteGenre);
 
@@ -58,7 +59,7 @@ router.delete("/users/:id", adminUserController.deleteUser);
 
 //info: Book Routes
 router.post(
-  "/",
+  "/books",
   bookUploads.single("coverImg"),
   adminBookController.createBook,
 );

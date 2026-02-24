@@ -1,4 +1,4 @@
-import { QueryFilter } from "mongoose";
+import { QueryFilter, Types } from "mongoose";
 import { IUser, UserModel } from "../models/user.model";
 
 export interface IUserRepository {
@@ -39,13 +39,20 @@ export class UserRepository implements IUserRepository {
   ): Promise<{ users: IUser[]; total: number }> {
     const filter: QueryFilter<IUser> = {};
 
-    if (search) {
-      filter.$or = [
-        { username: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
-        { firstName: { $regex: search, $options: "i" } },
-        { lastName: { $regex: search, $options: "i" } },
+    if (search?.trim()) {
+      const cleanSearch = search.trim();
+
+      const orConditions: any[] = [
+        { username: { $regex: cleanSearch, $options: "i" } },
+        { email: { $regex: cleanSearch, $options: "i" } },
+        { firstName: { $regex: cleanSearch, $options: "i" } },
+        { lastName: { $regex: cleanSearch, $options: "i" } },
       ];
+      if (Types.ObjectId.isValid(cleanSearch)) {
+        orConditions.push({ _id: new Types.ObjectId(cleanSearch) });
+      }
+
+      filter.$or = orConditions;
     }
 
     const [users, total] = await Promise.all([
@@ -57,6 +64,7 @@ export class UserRepository implements IUserRepository {
 
     return { users, total };
   }
+
   async updateUser(
     id: string,
     updatedData: Partial<IUser>,
