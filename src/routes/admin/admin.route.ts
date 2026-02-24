@@ -8,11 +8,13 @@ import { userUploads } from "../../middleware/upload.middleware";
 import { AdminBookController } from "../../controllers/admin/book.controller";
 import { MessageController } from "../../controllers/message.controller";
 import { GenreController } from "../../controllers/genre.controller";
+import { ReviewController } from "../../controllers/review.controller";
 
 let adminUserController = new AdminUserController();
 let adminBookController = new AdminBookController();
 let messageController = new MessageController();
 let genreController = new GenreController();
+let reviewController = new ReviewController();
 
 const router = Router();
 
@@ -21,6 +23,9 @@ router.use(adminOnlyMiddleware);
 
 // info: Messages Routes
 router.get("/messages", messageController.getAll);
+
+// info: Review Routes
+router.get("/reviews", reviewController.getAllPaginated);
 
 // info: Genres Routes
 router.get("/genres", genreController.getAllPaginated);

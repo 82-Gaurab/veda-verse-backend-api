@@ -11,6 +11,7 @@ import adminRouter from "./routes/admin/admin.route";
 import bookRouter from "./routes/book.route";
 import messageRouter from "./routes/message.route";
 import genreRouter from "./routes/genre.route";
+import reviewRouter from "./routes/review.route";
 
 dotenv.config();
 const app: Application = express();
@@ -35,5 +36,6 @@ app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/books", bookRouter);
 app.use("/api/v1/messages", messageRouter);
 app.use("/api/v1/genres", genreRouter);
+app.use("/api/v1/reviews", reviewRouter);
 
 export default app;

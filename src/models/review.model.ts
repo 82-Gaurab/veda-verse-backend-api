@@ -19,6 +19,8 @@ const ReviewSchema: Schema = new Schema(
   { timestamps: true },
 );
 
+ReviewSchema.index({ userId: 1, bookId: 1 }, { unique: true });
+
 export interface IReview extends Document {
   _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
