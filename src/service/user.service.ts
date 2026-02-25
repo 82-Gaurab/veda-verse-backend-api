@@ -1,5 +1,10 @@
 import { UserRepository } from "../repository/user.repository";
-import { CreateUserDTO, LoginUserDTO, UpdateUserDTO } from "../dtos/user.dto";
+import {
+  AddToCartDTO,
+  CreateUserDTO,
+  LoginUserDTO,
+  UpdateUserDTO,
+} from "../dtos/user.dto";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config";
@@ -160,5 +165,22 @@ export class UserService {
       username: user.username,
       profilePicture: user.profilePicture,
     };
+  }
+  async getMyself(id: string) {
+    const user = await userRepository.getUserCart(id);
+    if (!user) {
+      throw new HttpError(404, "User not found");
+    }
+    return user;
+  }
+
+  async addToCart(userId: string, data: AddToCartDTO) {
+    const updatedUser = await userRepository.addToCart(userId, data);
+
+    if (!updatedUser) {
+      throw new HttpError(404, `User not found ${userId}`);
+    }
+
+    return updatedUser;
   }
 }

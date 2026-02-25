@@ -8,7 +8,6 @@ export const UserSchema = z.object({
   lastName: z.string().optional(),
   role: z.enum(["user", "admin"]).default("user"),
   profilePicture: z.string().optional(),
-  wishlist: z.array(z.string()).optional(),
   cart: z
     .array(
       z.object({

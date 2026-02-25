@@ -16,6 +16,10 @@ router.put(
   authController.updateUser,
 );
 
+router.get("/me", authorizedMiddleware, authController.getMyData);
+
+router.put("/cart", authorizedMiddleware, authController.addToCart);
+
 router.post(
   "/upload-image",
   authorizedMiddleware,

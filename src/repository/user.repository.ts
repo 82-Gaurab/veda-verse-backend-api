@@ -1,5 +1,6 @@
 import { QueryFilter, Types } from "mongoose";
 import { IUser, UserModel } from "../models/user.model";
+import { AddToCartDTO } from "../dtos/user.dto";
 
 export interface IUserRepository {
   createUser(userData: Partial<IUser>): Promise<IUser>;
@@ -29,8 +30,17 @@ export class UserRepository implements IUserRepository {
     return user;
   }
   async getUserById(id: string): Promise<IUser | null> {
-    const user = await UserModel.findById(id);
+    const user = await UserModel.findById(id).populate({
+      path: "cart.bookId",
+      select: "title author price publishedYear",
+    });
     return user;
+  }
+  async getUserCart(id: string) {
+    return await UserModel.findById(id).populate({
+      path: "cart.bookId",
+      select: "title author price publishedYear coverImg",
+    });
   }
   async getAllUsers(
     page: number,
@@ -81,5 +91,34 @@ export class UserRepository implements IUserRepository {
 
   async uploadProfilePicture(file: Express.Multer.File) {
     return file.filename;
+  }
+
+  async addToCart(userId: string, data: AddToCartDTO): Promise<IUser | null> {
+    const updatedUser = await UserModel.findOneAndUpdate(
+      {
+        _id: userId,
+        "cart.bookId": data.product,
+      },
+      {
+        $inc: { "cart.$.quantity": data.quantity },
+      },
+      { new: true },
+    );
+
+    if (updatedUser) return updatedUser;
+
+    // If product not in cart → push new one
+    return await UserModel.findByIdAndUpdate(
+      userId,
+      {
+        $push: {
+          cart: {
+            bookId: data.product,
+            quantity: data.quantity,
+          },
+        },
+      },
+      { new: true },
+    );
   }
 }

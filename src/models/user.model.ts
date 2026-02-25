@@ -14,12 +14,6 @@ const UserSchema: Schema = new Schema<UserType>(
       default: "user",
     },
     profilePicture: { type: String, required: false },
-    wishlist: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Book",
-      },
-    ],
     cart: [
       {
         bookId: {
