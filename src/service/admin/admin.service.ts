@@ -1,5 +1,9 @@
 import { CreateUserDTO, UpdateUserDTO } from "../../dtos/user.dto";
 import { HttpError } from "../../error/http-error";
+import { BookModel } from "../../models/book.model";
+import { OrderModel } from "../../models/order.model";
+import { ReviewModel } from "../../models/review.model";
+import { UserModel } from "../../models/user.model";
 import { UserRepository } from "../../repository/user.repository";
 import bcryptjs from "bcryptjs";
 
@@ -66,5 +70,45 @@ export class AdminUserService {
       throw new HttpError(404, "User not found");
     }
     return user;
+  }
+
+  // info: this is for the dashboard page of admin
+  async getDashboardSummary() {
+    const [
+      totalUsers,
+      totalBooks,
+      lowStockBooks,
+      totalOrders,
+      pendingOrders,
+      totalReviews,
+      recentOrders,
+      recentUsers,
+    ] = await Promise.all([
+      UserModel.countDocuments(),
+      BookModel.countDocuments(),
+      BookModel.countDocuments({ stock: { $lte: 5 } }),
+      OrderModel.countDocuments(),
+      OrderModel.countDocuments({ status: "pending" }),
+      ReviewModel.countDocuments(),
+      OrderModel.find()
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select("_id userId totalPrice status createdAt"),
+      UserModel.find()
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select("_id name email createdAt"),
+    ]);
+
+    return {
+      totalUsers,
+      totalBooks,
+      totalOrders,
+      totalReviews,
+      pendingOrders,
+      lowStockBooks,
+      recentOrders,
+      recentUsers,
+    };
   }
 }

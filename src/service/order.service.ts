@@ -61,6 +61,15 @@ export class OrderService {
       search,
     );
 
+    const formattedOrders = orders.map((order) => ({
+      ...order.toObject(),
+      books: order.books.map((book) => ({
+        bookId: book.bookId._id,
+        bookName: (book.bookId as any).title,
+        quantity: book.quantity,
+      })),
+    }));
+
     const pagination = {
       page: pageNumber,
       size: pageSize,
@@ -68,7 +77,7 @@ export class OrderService {
       totalPages: Math.ceil(total / pageSize),
     };
 
-    return { orders, pagination };
+    return { orders: formattedOrders, pagination };
   }
   // info: update
   async updateOrder(id: string, updateData: UpdateOrderDTO) {

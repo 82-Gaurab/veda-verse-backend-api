@@ -120,4 +120,20 @@ export class GenreController {
       });
     }
   }
+  async getGenreById(req: Request, res: Response) {
+    try {
+      const genreId = req.params.id;
+      const genre = await genreService.getGenreById(genreId);
+      return res.status(200).json({
+        success: true,
+        data: genre,
+        message: "genre retrieve successful",
+      });
+    } catch (error: Error | any) {
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message ?? "Internal Server Error",
+      });
+    }
+  }
 }

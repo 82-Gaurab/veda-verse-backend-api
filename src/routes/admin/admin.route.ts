@@ -23,6 +23,9 @@ const router = Router();
 router.use(authorizedMiddleware);
 router.use(adminOnlyMiddleware);
 
+//info: Dashboard summary route
+router.get("/dashboard", adminUserController.getDashboard);
+
 // info: Messages Routes
 router.get("/messages", messageController.getAll);
 router.delete("/messages/:id", messageController.deleteMessage);
@@ -39,6 +42,7 @@ router.put("/orders/:id", orderController.updateOrder);
 router.post("/genres", genreController.create);
 router.get("/genres", genreController.getAllPaginated);
 router.get("/genres/all", genreController.getAllGenres);
+router.get("/genres/:id", genreController.getGenreById);
 router.put("/genres/:id", genreController.updateGenre);
 router.delete("/genres/:id", genreController.deleteGenre);
 
@@ -66,6 +70,10 @@ router.post(
 router.get("/books", adminBookController.getAllPaginated);
 router.post("/books", adminBookController.createBook);
 router.delete("/books/:id", adminBookController.deleteBook);
-router.put("/books/:id", adminBookController.updateBook);
+router.put(
+  "/books/:id",
+  bookUploads.single("coverImg"),
+  adminBookController.updateBook,
+);
 
 export default router;

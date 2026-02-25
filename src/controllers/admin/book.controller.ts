@@ -94,16 +94,25 @@ export class AdminBookController {
     try {
       const bookId = req.params.id;
 
-      const parsedBody = {
-        ...req.body,
-        price: Number(req.body.price),
-        stockAmount: Number(req.body.stockAmount),
-        genre: Array.isArray(req.body.genre)
-          ? req.body.genre
-          : req.body.genre
-            ? [req.body.genre]
-            : [],
-      };
+      const parsedBody: any = { ...req.body };
+
+      if (req.body.price !== undefined) {
+        parsedBody.price = Number(req.body.price);
+      }
+
+      if (req.body.stockAmount !== undefined) {
+        parsedBody.stockAmount = Number(req.body.stockAmount);
+      }
+
+      if (req.body.genre !== undefined) {
+        if (req.body.genre === "") {
+          parsedBody.genre = [];
+        } else {
+          parsedBody.genre = Array.isArray(req.body.genre)
+            ? req.body.genre
+            : [req.body.genre];
+        }
+      }
       const parsedData = UpdateBookDTO.safeParse(parsedBody);
       if (!parsedData.success) {
         return res.status(400).json({
@@ -114,6 +123,9 @@ export class AdminBookController {
 
       const updateData = parsedData.data;
 
+      if (req.file) {
+        updateData.coverImg = `/uploads/books/${req.file.filename}`;
+      }
       const updatedBook = await adminBookService.updateBook(bookId, updateData);
 
       return res.status(200).json({

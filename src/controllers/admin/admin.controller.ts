@@ -113,4 +113,23 @@ export class AdminUserController {
       });
     }
   }
+
+  // info: for admin dashboard
+  async getDashboard(req: Request, res: Response) {
+    try {
+      const summary = await adminUserService.getDashboardSummary();
+
+      res.status(200).json({
+        success: true,
+        message: "Dashboard summary fetched successfully",
+        data: summary,
+      });
+    } catch (error: any) {
+      console.error("Dashboard fetch error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to fetch dashboard summary",
+      });
+    }
+  }
 }

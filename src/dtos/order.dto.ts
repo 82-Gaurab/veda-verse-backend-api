@@ -4,8 +4,6 @@ import { OrderSchema } from "../types/order.type";
 export const CreateOrderDTO = OrderSchema.pick({
   userId: true,
   books: true,
-}).extend({
-  status: true,
 });
 
 export type CreateOrderDTO = z.infer<typeof CreateOrderDTO>;

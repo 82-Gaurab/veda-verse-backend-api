@@ -15,7 +15,9 @@ export class OrderRepository {
   }
   //info: get by id
   async getOrderById(id: string): Promise<IOrder | null> {
-    return await OrderModel.findById(id);
+    return await OrderModel.findById(id)
+      .populate("userId", "name email")
+      .populate("books.bookId", "name price");
   }
   //info: update
   async updateOrder(
@@ -38,7 +40,8 @@ export class OrderRepository {
 
     const [orders, total] = await Promise.all([
       OrderModel.find(filter)
-        .sort({ createdAt: -1 }) // newest first
+        .populate("books.bookId", "title price")
+        .sort({ createdAt: -1 })
         .skip((page - 1) * size)
         .limit(size),
       OrderModel.countDocuments(filter),

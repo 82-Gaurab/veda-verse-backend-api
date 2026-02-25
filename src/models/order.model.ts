@@ -47,7 +47,6 @@ export interface IOrder extends Document {
     bookId: mongoose.Types.ObjectId;
     quantity: number;
   }[];
-  price: number;
   totalPrice: number;
   status: "pending" | "paid" | "shipped" | "delivered" | "cancelled";
   createdAt: Date;
