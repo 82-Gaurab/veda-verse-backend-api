@@ -51,6 +51,8 @@ export class OrderRepository {
   }
   //info: get by user id
   async getOrdersByUserId(userId: string): Promise<IOrder[]> {
-    return await OrderModel.find({ userId }).sort({ createdAt: -1 });
+    return await OrderModel.find({ userId })
+      .populate("books.bookId", "title price")
+      .sort({ createdAt: -1 });
   }
 }

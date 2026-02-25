@@ -98,4 +98,25 @@ export class OrderController {
       });
     }
   }
+  async getMyOrders(req: Request, res: Response) {
+    try {
+      if (!req.user) {
+        return res
+          .status(401)
+          .json({ success: false, message: "Unauthorized" });
+      }
+
+      const userId = req.user._id; // <-- use _id from Mongo document
+      const orders = await orderService.getOrdersByUserId(userId);
+
+      return res.status(200).json({ success: true, data: orders });
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json({
+          success: false,
+          message: error.message || "Failed to fetch orders",
+        });
+    }
+  }
 }

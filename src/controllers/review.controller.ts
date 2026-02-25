@@ -112,10 +112,17 @@ export class ReviewController {
     }
   }
 
-  // info: Get Review By User ID
-  async getReviewsByUserId(req: Request, res: Response) {
+  // info: Get Reviews for Logged-in User
+  async getMyReviews(req: Request & { user?: any }, res: Response) {
     try {
-      const { userId } = req.params;
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          message: "Unauthorized user",
+        });
+      }
+
+      const userId = req.user.id;
 
       const reviews = await reviewService.getReviewsByUserId(userId);
 
@@ -123,7 +130,7 @@ export class ReviewController {
         success: true,
         count: reviews.length,
         data: reviews,
-        message: "All Reviews for the userId retrieved successfully",
+        message: "All Reviews for the logged-in user retrieved successfully",
       });
     } catch (error: Error | any) {
       return res.status(error.statusCode ?? 500).json({

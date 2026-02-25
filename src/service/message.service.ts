@@ -1,4 +1,4 @@
-import { CreateMessageDTO } from "../dtos/message.dto";
+import { CreateMessageDTO, UpdateMessageDTO } from "../dtos/message.dto";
 import { IMessage } from "../models/message.model";
 import { MessageRepository } from "../repository/message.repository";
 
@@ -42,5 +42,17 @@ export class MessageService {
     };
 
     return { messages, pagination };
+  }
+  // info: update
+  async updateMessage(id: string, updateData: UpdateMessageDTO) {
+    const updatedMessage = await messageRepository.updateMessage(
+      id,
+      updateData,
+    );
+    return updatedMessage;
+  }
+
+  async getTestimonials() {
+    return await messageRepository.getTestimonials();
   }
 }

@@ -7,3 +7,9 @@ export const CreateMessageDTO = MessageSchema.pick({
   message: true,
 });
 export type CreateMessageDTO = z.infer<typeof CreateMessageDTO>;
+
+export const UpdateMessageDTO = MessageSchema.pick({
+  isTestimonial: true,
+});
+
+export type UpdateMessageDTO = z.infer<typeof UpdateMessageDTO>;

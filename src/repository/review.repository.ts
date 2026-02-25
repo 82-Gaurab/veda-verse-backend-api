@@ -51,11 +51,15 @@ export class ReviewRepository {
   }
 
   async getReviewByUserId(userId: string): Promise<IReview[]> {
-    return await ReviewModel.find({ userId }).sort({ createdAt: -1 });
+    return await ReviewModel.find({ userId })
+      .sort({ createdAt: -1 })
+      .populate("bookId", "title price");
   }
 
   async getReviewByBookId(bookId: string): Promise<IReview[]> {
-    return await ReviewModel.find({ bookId }).sort({ createdAt: -1 });
+    return await ReviewModel.find({ bookId })
+      .sort({ createdAt: -1 })
+      .populate("userId", "username profilePicture");
   }
 
   async getReviewById(reviewId: string): Promise<IReview | null> {

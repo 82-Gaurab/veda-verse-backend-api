@@ -1,9 +1,10 @@
 import { Router } from "express";
+import { authorizedMiddleware } from "../middleware/authorized.middleware";
 import { OrderController } from "../controllers/order.controller";
 
 const router = Router();
-const controller = new OrderController();
+const orderController = new OrderController();
 
-router.post("/", controller.createOrder);
-
+router.post("/", orderController.createOrder);
+router.get("/my-orders", authorizedMiddleware, orderController.getMyOrders);
 export default router;

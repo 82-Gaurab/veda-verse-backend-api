@@ -88,4 +88,11 @@ export class OrderService {
     const updatedOrder = await orderRepository.updateOrder(id, updateData);
     return updatedOrder;
   }
+  async getOrdersByUserId(userId: string): Promise<IOrder[]> {
+    if (!userId) {
+      throw new Error("User ID is required");
+    }
+
+    return await orderRepository.getOrdersByUserId(userId);
+  }
 }

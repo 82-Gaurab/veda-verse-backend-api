@@ -46,9 +46,21 @@ export class BookRepository implements IBookRepository {
 
     return { books, total };
   }
-  async getAllBooks(): Promise<IBook[]> {
-    const books = await BookModel.find().populate("Book", "name").lean().exec();
-    return books;
+
+  async getAllBooks(search?: string): Promise<IBook[]> {
+    const filter: QueryFilter<IBook> = {};
+
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { author: { $regex: search, $options: "i" } },
+        { category: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    return await BookModel.find(filter)
+      .populate("genre", "name")
+      .sort({ createdAt: -1 });
   }
 
   async createBook(bookData: Partial<IBook>): Promise<IBook> {
@@ -78,5 +90,11 @@ export class BookRepository implements IBookRepository {
       new: true,
     });
     return updatedBook;
+  }
+
+  async getBooksByGenre(genreId: string): Promise<IBook[]> {
+    return await BookModel.find({ genre: genreId })
+      .populate("genre", "name") // populate genre name
+      .sort({ createdAt: -1 }); // optional: latest first
   }
 }

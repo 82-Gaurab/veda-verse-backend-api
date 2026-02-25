@@ -29,6 +29,7 @@ router.get("/dashboard", adminUserController.getDashboard);
 // info: Messages Routes
 router.get("/messages", messageController.getAll);
 router.delete("/messages/:id", messageController.deleteMessage);
+router.put("/messages/:id", messageController.updateMessage);
 
 // info: Review Routes
 router.get("/reviews", reviewController.getAllPaginated);

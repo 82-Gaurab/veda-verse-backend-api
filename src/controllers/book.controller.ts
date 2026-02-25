@@ -4,18 +4,22 @@ import { BookService } from "../service/book.service";
 const bookService = new BookService();
 
 export class BookController {
-  async getAllBooks(req: Request, res: Response) {
+  async getAllBooks(req: Request, res: Response): Promise<void> {
     try {
-      const books = await bookService.getAllBooks();
-      return res.status(200).json({
+      const search = req.query.search as string | undefined;
+
+      const books = await bookService.getAllBooks(search);
+
+      res.status(200).json({
         success: true,
-        message: "All book retrieved successfully",
         data: books,
       });
-    } catch (error: Error | any) {
-      return res.status(error.statusCode ?? 500).json({
+    } catch (error) {
+      console.error("Error fetching books:", error);
+
+      res.status(500).json({
         success: false,
-        message: error.message ?? "Internal Server Error",
+        message: "Failed to fetch books",
       });
     }
   }
@@ -34,6 +38,25 @@ export class BookController {
         success: false,
         message: error.message ?? "Internal Server Error",
       });
+    }
+  }
+
+  async getBooksByGenre(req: Request, res: Response) {
+    try {
+      const { genreId } = req.params;
+
+      if (!genreId) {
+        return res.status(400).json({ message: "Genre ID is required" });
+      }
+
+      const books = await bookService.getBooksByGenre(genreId);
+
+      return res.status(200).json({ success: true, data: books });
+    } catch (error) {
+      console.error("Error fetching books by genre:", error);
+      return res
+        .status(500)
+        .json({ success: false, message: "Internal server error" });
     }
   }
 }

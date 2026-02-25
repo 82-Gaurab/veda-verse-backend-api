@@ -36,4 +36,22 @@ export class MessageRepository {
 
     return { messages, total };
   }
+
+  //info: update
+  async updateMessage(
+    id: string,
+    updatedData: Partial<IMessage>,
+  ): Promise<IMessage | null> {
+    return await MessageModel.findByIdAndUpdate(id, updatedData, { new: true });
+  }
+  // info: testimonials
+  async getTestimonials(): Promise<{ messages: IMessage[] }> {
+    const filter: QueryFilter<IMessage> = { isTestimonial: true };
+
+    const [messages] = await Promise.all([
+      MessageModel.find(filter).sort({ createdAt: -1 }),
+    ]);
+
+    return { messages };
+  }
 }

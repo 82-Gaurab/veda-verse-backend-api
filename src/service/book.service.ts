@@ -44,15 +44,8 @@ export class BookService {
     return newBook;
   }
 
-  async getAllBooks() {
-    let receivedBooks = await bookRepository.getAllBooks();
-    let transformedBooks = receivedBooks.map((bk) => {
-      return {
-        ...bk,
-        title: bk.title.toUpperCase(),
-      };
-    });
-    return transformedBooks;
+  async getAllBooks(search?: string) {
+    return await bookRepository.getAllBooks(search);
   }
 
   async getBookById(id: string) {
@@ -63,5 +56,9 @@ export class BookService {
     bookObj.genre = bookObj.genre.map((g: any) => g.name);
 
     return bookObj;
+  }
+
+  async getBooksByGenre(genreId: string): Promise<IBook[]> {
+    return bookRepository.getBooksByGenre(genreId);
   }
 }

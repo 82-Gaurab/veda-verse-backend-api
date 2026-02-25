@@ -6,6 +6,7 @@ const MessageSchema: Schema = new Schema<MessageType>(
     username: { type: String, required: true },
     userEmail: { type: String, required: true },
     message: { type: String, required: true },
+    isTestimonial: { type: Boolean, required: false, default: false },
   },
   { timestamps: true },
 );

@@ -150,4 +150,15 @@ export class UserService {
       throw new HttpError(400, "Invalid or expired token");
     }
   }
+
+  async getUserById(id: string) {
+    const user = await userRepository.getUserById(id);
+    if (!user) {
+      throw new HttpError(404, "User not found");
+    }
+    return {
+      username: user.username,
+      profilePicture: user.profilePicture,
+    };
+  }
 }
