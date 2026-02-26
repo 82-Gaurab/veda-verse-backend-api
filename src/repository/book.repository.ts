@@ -1,4 +1,4 @@
-import { QueryFilter, Types } from "mongoose";
+import { ClientSession, QueryFilter, Types } from "mongoose";
 import { IBook, BookModel } from "../models/book.model";
 
 export interface IBookRepository {
@@ -96,5 +96,17 @@ export class BookRepository implements IBookRepository {
     return await BookModel.find({ genre: genreId })
       .populate("genre", "name") // populate genre name
       .sort({ createdAt: -1 }); // optional: latest first
+  }
+
+  async decreaseStock(
+    bookId: string,
+    quantity: number,
+    session: ClientSession,
+  ): Promise<IBook | null> {
+    return await BookModel.findOneAndUpdate(
+      { _id: bookId, stockAmount: { $gte: quantity } },
+      { $inc: { stockAmount: -quantity } },
+      { new: true, session },
+    );
   }
 }

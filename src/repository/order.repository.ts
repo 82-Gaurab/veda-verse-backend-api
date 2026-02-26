@@ -1,12 +1,15 @@
-import { QueryFilter } from "mongoose";
+import { ClientSession, QueryFilter } from "mongoose";
 import { CreateOrderDTO } from "../dtos/order.dto";
 import { IOrder, OrderModel } from "../models/order.model";
 
 export class OrderRepository {
   //info: create
-  async create(data: CreateOrderDTO): Promise<IOrder> {
-    const order = new OrderModel(data);
-    return await order.save();
+  async create(
+    data: Partial<IOrder>,
+    session?: ClientSession,
+  ): Promise<IOrder> {
+    const order = await OrderModel.create([data], { session });
+    return order[0];
   }
   //info: delete
   async deleteOrder(id: string): Promise<boolean> {

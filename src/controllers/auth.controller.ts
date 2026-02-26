@@ -180,21 +180,6 @@ export class AuthController {
     }
   }
 
-  async getUserById(req: Request, res: Response) {
-    try {
-      const userId = req.params.id;
-      const user = await userService.getUserById(userId);
-      return res
-        .status(200)
-        .json({ success: true, data: user, message: "Single User Retrieved" });
-    } catch (error: Error | any) {
-      return res.status(error.statusCode ?? 500).json({
-        success: false,
-        message: error.message || "Internal Server Error",
-      });
-    }
-  }
-
   async addToCart(req: Request, res: Response) {
     try {
       if (!req.user) {

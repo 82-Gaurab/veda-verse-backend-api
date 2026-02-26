@@ -1,38 +1,55 @@
-import { CreateOrderDTO, UpdateOrderDTO } from "../dtos/order.dto";
+import mongoose from "mongoose";
+import { UpdateOrderDTO } from "../dtos/order.dto";
 import { HttpError } from "../error/http-error";
 import { IOrder } from "../models/order.model";
 import { BookRepository } from "../repository/book.repository";
 import { OrderRepository } from "../repository/order.repository";
+import { UserRepository } from "../repository/user.repository";
 
 const orderRepository = new OrderRepository();
 const bookRepository = new BookRepository();
+const userRepository = new UserRepository();
 export class OrderService {
   //info: create
-  async createOrder(dto: CreateOrderDTO) {
-    const bookIds = dto.books.map((b) => b.bookId);
-    const booksFromDb = await bookRepository.getBookByIds(bookIds);
+  async createOrder(userId: string) {
+    const user = await userRepository.getUserById(userId);
+    if (!user) throw new HttpError(404, "User not found");
+
+    if (user.cart == undefined || user.cart.length === 0) {
+      throw new HttpError(400, "Cart is empty");
+    }
+
+    const bookIds = user.cart.map((item) => item.bookId);
+    const books = await bookRepository.getBookByIds(bookIds);
 
     let totalPrice = 0;
 
-    for (const item of booksFromDb) {
-      const quantity =
-        dto.books.find((b) => b.bookId === item._id.toString())?.quantity || 1;
+    const orderBooks = books.map((book) => {
+      const cartItem = user.cart!.find(
+        (item) => item.bookId.toString() === book._id.toString(),
+      );
 
-      totalPrice += item.price * quantity;
-    }
+      const quantity = cartItem?.quantity || 1;
 
-    const orderData = {
-      userId: dto.userId,
-      books: dto.books,
-      totalPrice: totalPrice,
+      totalPrice += book.price * quantity;
+
+      return {
+        bookId: book._id,
+        quantity,
+      };
+    });
+
+    const order = await orderRepository.create({
+      userId: new mongoose.Types.ObjectId(userId),
+      books: orderBooks,
+      totalPrice,
       status: "pending",
-    };
+    });
 
-    const order = await orderRepository.create(orderData);
+    await userRepository.clearCart(userId);
 
     return order;
   }
-
   //info: delete
   async deleteOrder(id: string) {
     const deleted = await orderRepository.deleteOrder(id);
@@ -81,13 +98,44 @@ export class OrderService {
   }
   // info: update
   async updateOrder(id: string, updateData: UpdateOrderDTO) {
-    const order = await orderRepository.getOrderById(id);
-    if (!order) {
-      throw new HttpError(404, "Order not found");
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      const order = await orderRepository.getOrderById(id);
+      if (!order) throw new HttpError(404, "Order not found");
+
+      // Only trigger stock reduction when status changes to paid
+      if (updateData.status === "paid" && order.status !== "paid") {
+        for (const item of order.books) {
+          const updatedBook = await bookRepository.decreaseStock(
+            item.bookId.toString(),
+            item.quantity,
+            session,
+          );
+
+          if (!updatedBook) {
+            throw new HttpError(
+              400,
+              `Not enough stock for book ID: ${item.bookId}`,
+            );
+          }
+        }
+      }
+
+      const updatedOrder = await orderRepository.updateOrder(id, updateData);
+
+      await session.commitTransaction();
+      session.endSession();
+
+      return updatedOrder;
+    } catch (error) {
+      await session.abortTransaction();
+      session.endSession();
+      throw error;
     }
-    const updatedOrder = await orderRepository.updateOrder(id, updateData);
-    return updatedOrder;
   }
+  //info: order by user id
   async getOrdersByUserId(userId: string): Promise<IOrder[]> {
     if (!userId) {
       throw new Error("User ID is required");

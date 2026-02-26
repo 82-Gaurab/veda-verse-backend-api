@@ -1,4 +1,4 @@
-import { QueryFilter, Types } from "mongoose";
+import { ClientSession, QueryFilter, Types } from "mongoose";
 import { IUser, UserModel } from "../models/user.model";
 import { AddToCartDTO } from "../dtos/user.dto";
 
@@ -120,5 +120,9 @@ export class UserRepository implements IUserRepository {
       },
       { new: true },
     );
+  }
+
+  async clearCart(userId: string) {
+    await UserModel.findByIdAndUpdate(userId, { $set: { cart: [] } });
   }
 }

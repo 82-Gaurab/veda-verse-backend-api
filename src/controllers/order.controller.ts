@@ -9,11 +9,18 @@ export class OrderController {
   // info: create
   async createOrder(req: Request, res: Response) {
     try {
-      const validatedData = CreateOrderDTO.parse(req.body);
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          message: "Unauthorized",
+        });
+      }
 
-      const order = await orderService.createOrder(validatedData);
+      const userId = req.user._id.toString();
 
-      res.status(201).json({
+      const order = await orderService.createOrder(userId);
+
+      return res.status(201).json({
         success: true,
         message: "Order created successfully",
         data: order,
@@ -25,7 +32,6 @@ export class OrderController {
       });
     }
   }
-
   // info: Delete
   async deleteOrder(req: Request, res: Response) {
     try {
