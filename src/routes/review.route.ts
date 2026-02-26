@@ -6,7 +6,7 @@ const reviewController = new ReviewController();
 
 const router = Router();
 
-router.post("/", reviewController.create);
+router.post("/", authorizedMiddleware, reviewController.create);
 router.get("/my-reviews", authorizedMiddleware, reviewController.getMyReviews);
 router.get("/books/:bookId", reviewController.getReviewsByBookId);
 router.put("/:id", reviewController.updateReview);

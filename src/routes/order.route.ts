@@ -5,6 +5,6 @@ import { OrderController } from "../controllers/order.controller";
 const router = Router();
 const orderController = new OrderController();
 
-router.post("/", orderController.createOrder);
+router.post("/", authorizedMiddleware, orderController.createOrder);
 router.get("/my-orders", authorizedMiddleware, orderController.getMyOrders);
 export default router;

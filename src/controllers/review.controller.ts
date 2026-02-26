@@ -9,6 +9,12 @@ export class ReviewController {
   // info: Create Review
   async create(req: Request, res: Response): Promise<Response> {
     try {
+      const userId = req.user?._id;
+      if (!userId) {
+        return res
+          .status(400)
+          .json({ success: false, message: "User ID not provided" });
+      }
       const parsedData = CreateReviewDTO.safeParse(req.body);
 
       if (!parsedData.success) {
@@ -17,7 +23,10 @@ export class ReviewController {
         });
       }
 
-      const reviewData = parsedData.data;
+      const reviewData = {
+        ...parsedData.data,
+        userId: userId,
+      };
 
       const review = await reviewService.createReview(reviewData);
 

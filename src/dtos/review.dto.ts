@@ -3,7 +3,6 @@ import { ReviewSchema } from "../types/review.type";
 
 export const CreateReviewDTO = ReviewSchema.pick({
   bookId: true,
-  userId: true,
   comment: true,
   title: true,
   rating: true,
