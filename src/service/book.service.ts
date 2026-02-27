@@ -52,10 +52,7 @@ export class BookService {
     const book = await bookRepository.getBookById(id);
     if (!book) throw new HttpError(404, "No book of such Id");
 
-    const bookObj = book.toObject();
-    bookObj.genre = bookObj.genre.map((g: any) => g.name);
-
-    return bookObj;
+    return book;
   }
 
   async getBooksByGenre(genreId: string): Promise<IBook[]> {
