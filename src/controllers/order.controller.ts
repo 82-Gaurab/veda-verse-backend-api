@@ -104,6 +104,34 @@ export class OrderController {
       });
     }
   }
+
+  async payOrder(req: Request, res: Response) {
+    try {
+      if (!req.user) {
+        return res
+          .status(401)
+          .json({ success: false, message: "Unauthorized" });
+      }
+
+      const { orderId } = req.params;
+      // const validatedData = UpdateOrderDTO.parse(req.body);
+
+      const updatedOrder = await orderService.updateOrder(orderId, {
+        status: "paid",
+      });
+      res.status(200).json({
+        success: true,
+        message: "Order updated successfully",
+        data: updatedOrder,
+      });
+    } catch (error: Error | any) {
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
+    }
+  }
+
   async getMyOrders(req: Request, res: Response) {
     try {
       if (!req.user) {

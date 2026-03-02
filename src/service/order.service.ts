@@ -99,41 +99,36 @@ export class OrderService {
   // info: update
   async updateOrder(id: string, updateData: UpdateOrderDTO) {
     const session = await mongoose.startSession();
-    session.startTransaction();
+    // session.startTransaction();
 
-    try {
-      const order = await orderRepository.getOrderById(id);
-      if (!order) throw new HttpError(404, "Order not found");
+    const order = await orderRepository.getOrderById(id);
+    if (!order) throw new HttpError(404, "Order not found");
 
-      // Only trigger stock reduction when status changes to paid
-      if (updateData.status === "paid" && order.status !== "paid") {
-        for (const item of order.books) {
-          const updatedBook = await bookRepository.decreaseStock(
-            item.bookId.toString(),
-            item.quantity,
-            session,
+    // Only trigger stock reduction when status changes to paid
+    if (updateData.status === "paid" && order.status !== "paid") {
+      for (const item of order.books) {
+        const bookId =
+          typeof item.bookId === "object"
+            ? item.bookId._id.toString()
+            : item.bookId;
+        const updatedBook = await bookRepository.decreaseStock(
+          bookId,
+          item.quantity,
+          // session,
+        );
+
+        if (!updatedBook) {
+          throw new HttpError(
+            400,
+            `Not enough stock for book ID: ${item.bookId}`,
           );
-
-          if (!updatedBook) {
-            throw new HttpError(
-              400,
-              `Not enough stock for book ID: ${item.bookId}`,
-            );
-          }
         }
       }
-
-      const updatedOrder = await orderRepository.updateOrder(id, updateData);
-
-      await session.commitTransaction();
-      session.endSession();
-
-      return updatedOrder;
-    } catch (error) {
-      await session.abortTransaction();
-      session.endSession();
-      throw error;
     }
+
+    const updatedOrder = await orderRepository.updateOrder(id, updateData);
+
+    return updatedOrder;
   }
   //info: order by user id
   async getOrdersByUserId(userId: string): Promise<IOrder[]> {

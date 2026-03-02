@@ -98,15 +98,10 @@ export class BookRepository implements IBookRepository {
       .sort({ createdAt: -1 }); // optional: latest first
   }
 
-  async decreaseStock(
-    bookId: string,
-    quantity: number,
-    session: ClientSession,
-  ): Promise<IBook | null> {
+  async decreaseStock(bookId: string, quantity: number): Promise<IBook | null> {
     return await BookModel.findOneAndUpdate(
       { _id: bookId, stockAmount: { $gte: quantity } },
       { $inc: { stockAmount: -quantity } },
-      { new: true, session },
     );
   }
 }
