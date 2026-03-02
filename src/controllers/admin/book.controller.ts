@@ -1,0 +1,143 @@
+import { CreateBookDTO, UpdateBookDTO } from "../../dtos/book.dto";
+import { Request, Response } from "express";
+import z from "zod";
+import { AdminBookService } from "../../service/admin/book.service";
+import { QueryParams } from "../../types/query.type";
+
+let adminBookService = new AdminBookService();
+
+export class AdminBookController {
+  async createBook(req: Request, res: Response) {
+    try {
+      const parsedBody = {
+        ...req.body,
+        price: Number(req.body.price),
+        stockAmount: Number(req.body.stockAmount),
+        genre: Array.isArray(req.body.genre)
+          ? req.body.genre
+          : req.body.genre
+            ? [req.body.genre]
+            : [],
+      };
+      const parsedData = CreateBookDTO.safeParse(parsedBody);
+
+      if (!parsedData.success) {
+        return res
+          .status(404)
+          .json({ error: z.prettifyError(parsedData.error) });
+      }
+      if (req.file) {
+        parsedData.data.coverImg = `/uploads/books/${req.file.filename}`;
+      }
+
+      const bookData: CreateBookDTO = parsedData.data;
+
+      const newBook = await adminBookService.createBook(bookData);
+
+      return res.status(200).json({
+        success: true,
+        message: "New Book Created Successfully",
+        data: newBook,
+      });
+    } catch (error: Error | any) {
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message ?? "Internal Server Error",
+      });
+    }
+  }
+
+  // info: Get All paginated
+  async getAllPaginated(req: Request, res: Response) {
+    try {
+      const { page, size, search }: QueryParams = req.query;
+
+      const { books, pagination } = await adminBookService.getAllBookPaginated(
+        page,
+        size,
+        search,
+      );
+
+      return res.status(200).json({
+        success: true,
+        data: books,
+        pagination: pagination,
+        message: "All Reviews Retrieved",
+      });
+    } catch (error: Error | any) {
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
+    }
+  }
+
+  async deleteBook(req: Request, res: Response) {
+    try {
+      const bookId = req.params.id;
+      const deleted = await adminBookService.deleteBook(bookId);
+      if (!deleted) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Book not found" });
+      }
+      return res.status(200).json({ success: true, message: "Book Deleted" });
+    } catch (error: Error | any) {
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
+    }
+  }
+
+  async updateBook(req: Request, res: Response): Promise<Response> {
+    try {
+      const bookId = req.params.id;
+
+      const parsedBody: any = { ...req.body };
+
+      if (req.body.price !== undefined) {
+        parsedBody.price = Number(req.body.price);
+      }
+
+      if (req.body.stockAmount !== undefined) {
+        parsedBody.stockAmount = Number(req.body.stockAmount);
+      }
+
+      if (req.body.genre !== undefined) {
+        if (req.body.genre === "") {
+          parsedBody.genre = [];
+        } else {
+          parsedBody.genre = Array.isArray(req.body.genre)
+            ? req.body.genre
+            : [req.body.genre];
+        }
+      }
+      const parsedData = UpdateBookDTO.safeParse(parsedBody);
+      if (!parsedData.success) {
+        return res.status(400).json({
+          success: false,
+          error: z.prettifyError(parsedData.error),
+        });
+      }
+
+      const updateData = parsedData.data;
+
+      if (req.file) {
+        updateData.coverImg = `/uploads/books/${req.file.filename}`;
+      }
+      const updatedBook = await adminBookService.updateBook(bookId, updateData);
+
+      return res.status(200).json({
+        success: true,
+        message: "Book Updated Successfully",
+        data: updatedBook,
+      });
+    } catch (error: Error | any) {
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message ?? "Internal Server Error",
+      });
+    }
+  }
+}

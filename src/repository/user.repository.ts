@@ -1,5 +1,6 @@
-import { QueryFilter } from "mongoose";
+import { ClientSession, QueryFilter, Types } from "mongoose";
 import { IUser, UserModel } from "../models/user.model";
+import { AddToCartDTO } from "../dtos/user.dto";
 
 export interface IUserRepository {
   createUser(userData: Partial<IUser>): Promise<IUser>;
@@ -29,8 +30,17 @@ export class UserRepository implements IUserRepository {
     return user;
   }
   async getUserById(id: string): Promise<IUser | null> {
-    const user = await UserModel.findById(id);
+    const user = await UserModel.findById(id).populate({
+      path: "cart.bookId",
+      select: "title author price publishedYear",
+    });
     return user;
+  }
+  async getUserCart(id: string) {
+    return await UserModel.findById(id).populate({
+      path: "cart.bookId",
+      select: "title author price publishedYear coverImg",
+    });
   }
   async getAllUsers(
     page: number,
@@ -39,13 +49,20 @@ export class UserRepository implements IUserRepository {
   ): Promise<{ users: IUser[]; total: number }> {
     const filter: QueryFilter<IUser> = {};
 
-    if (search) {
-      filter.$or = [
-        { username: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
-        { firstName: { $regex: search, $options: "i" } },
-        { lastName: { $regex: search, $options: "i" } },
+    if (search?.trim()) {
+      const cleanSearch = search.trim();
+
+      const orConditions: any[] = [
+        { username: { $regex: cleanSearch, $options: "i" } },
+        { email: { $regex: cleanSearch, $options: "i" } },
+        { firstName: { $regex: cleanSearch, $options: "i" } },
+        { lastName: { $regex: cleanSearch, $options: "i" } },
       ];
+      if (Types.ObjectId.isValid(cleanSearch)) {
+        orConditions.push({ _id: new Types.ObjectId(cleanSearch) });
+      }
+
+      filter.$or = orConditions;
     }
 
     const [users, total] = await Promise.all([
@@ -57,6 +74,7 @@ export class UserRepository implements IUserRepository {
 
     return { users, total };
   }
+
   async updateUser(
     id: string,
     updatedData: Partial<IUser>,
@@ -73,5 +91,38 @@ export class UserRepository implements IUserRepository {
 
   async uploadProfilePicture(file: Express.Multer.File) {
     return file.filename;
+  }
+
+  async addToCart(userId: string, data: AddToCartDTO): Promise<IUser | null> {
+    const updatedUser = await UserModel.findOneAndUpdate(
+      {
+        _id: userId,
+        "cart.bookId": data.product,
+      },
+      {
+        $inc: { "cart.$.quantity": data.quantity },
+      },
+      { new: true },
+    );
+
+    if (updatedUser) return updatedUser;
+
+    // If product not in cart → push new one
+    return await UserModel.findByIdAndUpdate(
+      userId,
+      {
+        $push: {
+          cart: {
+            bookId: data.product,
+            quantity: data.quantity,
+          },
+        },
+      },
+      { new: true },
+    );
+  }
+
+  async clearCart(userId: string) {
+    await UserModel.findByIdAndUpdate(userId, { $set: { cart: [] } });
   }
 }

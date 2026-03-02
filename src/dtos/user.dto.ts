@@ -24,6 +24,12 @@ export const LoginUserDTO = z.object({
 
 export type LoginUserDTO = z.infer<typeof LoginUserDTO>;
 
+export const AddToCartDTO = z.object({
+  product: z.string(),
+  quantity: z.number().min(1),
+});
+export type AddToCartDTO = z.infer<typeof AddToCartDTO>;
+
 // all fields optional for update
 export const UpdateUserDTO = UserSchema.partial();
 export type UpdateUserDTO = z.infer<typeof UpdateUserDTO>;

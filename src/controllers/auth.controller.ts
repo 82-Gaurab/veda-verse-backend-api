@@ -1,7 +1,12 @@
 import { Request, Response } from "express";
 import { UserService } from "../service/user.service";
-import { CreateUserDTO, LoginUserDTO, UpdateUserDTO } from "../dtos/user.dto";
-import z, { success } from "zod";
+import {
+  AddToCartDTO,
+  CreateUserDTO,
+  LoginUserDTO,
+  UpdateUserDTO,
+} from "../dtos/user.dto";
+import z from "zod";
 
 let userService = new UserService();
 export class AuthController {
@@ -74,7 +79,7 @@ export class AuthController {
 
       // file comes from req.file
       if (req.file) {
-        updatePayload.profilePicture = `/uploads/${req.file.filename}`;
+        updatePayload.profilePicture = `/uploads/users/${req.file.filename}`;
       }
 
       const updatedUser = await userService.updateUser(userId, updatePayload);
@@ -126,6 +131,23 @@ export class AuthController {
     }
   }
 
+  async sendResetPasswordOTPEmail(req: Request, res: Response) {
+    try {
+      const email = req.body.email;
+      const otp = await userService.sendResetPasswordOTPEmail(email);
+      return res.status(200).json({
+        success: true,
+        data: otp,
+        message: "If the email is registered, a reset OTP has been sent.",
+      });
+    } catch (error: Error | any) {
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
+    }
+  }
+
   async resetPassword(req: Request, res: Response) {
     try {
       const token = req.params.token;
@@ -135,6 +157,75 @@ export class AuthController {
         success: true,
         message: "Password has been reset successfully.",
       });
+    } catch (error: Error | any) {
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
+    }
+  }
+  async resetPasswordOTP(req: Request, res: Response) {
+    try {
+      const { newPassword, email } = req.body;
+      await userService.resetPasswordOTP(email, newPassword);
+      return res.status(200).json({
+        success: true,
+        message: "Password has been reset successfully.",
+      });
+    } catch (error: Error | any) {
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
+    }
+  }
+
+  async addToCart(req: Request, res: Response) {
+    try {
+      if (!req.user) {
+        return res
+          .status(401)
+          .json({ success: false, message: "Unauthorized" });
+      }
+
+      const userId = req.user._id;
+      let parsedData = AddToCartDTO.safeParse(req.body);
+      if (!parsedData.success) {
+        return res
+          .status(400)
+          .json({ success: false, message: z.prettifyError(parsedData.error) });
+      }
+
+      const updatePayload: any = { ...parsedData.data };
+
+      const updatedUser = await userService.addToCart(userId, updatePayload);
+
+      return res.status(200).json({
+        success: true,
+        message: "Added to Cart successfully",
+        data: updatedUser,
+      });
+    } catch (error: Error | any) {
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
+    }
+  }
+
+  async getMyData(req: Request, res: Response) {
+    try {
+      if (!req.user) {
+        return res
+          .status(401)
+          .json({ success: false, message: "Unauthorized" });
+      }
+
+      const userId = req.user._id;
+      const user = await userService.getMyself(userId);
+      return res
+        .status(200)
+        .json({ success: true, data: user, message: "My Data Retrieved" });
     } catch (error: Error | any) {
       return res.status(error.statusCode ?? 500).json({
         success: false,

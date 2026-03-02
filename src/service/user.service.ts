@@ -1,10 +1,15 @@
 import { UserRepository } from "../repository/user.repository";
-import { CreateUserDTO, LoginUserDTO, UpdateUserDTO } from "../dtos/user.dto";
+import {
+  AddToCartDTO,
+  CreateUserDTO,
+  LoginUserDTO,
+  UpdateUserDTO,
+} from "../dtos/user.dto";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config";
 import { HttpError } from "../error/http-error";
-import { sendEmail } from "../config/email";
+import { sendEmail, sendOTPEmail } from "../config/email";
 
 const CLIENT_URL = process.env.CLIENT_URL as string;
 let userRepository = new UserRepository();
@@ -58,18 +63,6 @@ export class UserService {
     if (!user) {
       throw new HttpError(404, "User not found");
     }
-    // if(user.email != data.email) {
-    //   const emailCheck = await userRepository.getUserByEmail(data.email!);
-    //   if(!emailCheck) {
-    //     throw new HttpError(403, "Email already in use");
-    //   }
-    // }
-    // if(user.username != data.username) {
-    //   const usernameCheck = await userRepository.getUserByUsername(data.username!);
-    //   if(!usernameCheck) {
-    //     throw new HttpError(403, "Username already in use");
-    //   }
-    // }
 
     if (data.password) {
       const hashedPassword = await bcryptjs.hash(data.password, 10);
@@ -113,6 +106,20 @@ export class UserService {
     return user;
   }
 
+  async sendResetPasswordOTPEmail(email?: string) {
+    if (!email) {
+      throw new HttpError(404, "Email is required");
+    }
+
+    const user = await userRepository.getUserByEmail(email);
+    if (!user) {
+      throw new HttpError(404, "User not found");
+    }
+
+    const otp = await sendOTPEmail(user.email);
+    return otp;
+  }
+
   async resetPassword(token?: string, newPassword?: string) {
     try {
       if (!token || !newPassword) {
@@ -130,5 +137,40 @@ export class UserService {
     } catch (error) {
       throw new HttpError(400, "Invalid or expired token");
     }
+  }
+  async resetPasswordOTP(email?: string, newPassword?: string) {
+    try {
+      if (!newPassword || !email) {
+        throw new HttpError(400, "email and new password are required");
+      }
+      const user = await userRepository.getUserByEmail(email);
+      const userId = `${user?._id}`;
+      if (!user) {
+        throw new HttpError(404, "User not found");
+      }
+      const hashedPassword = await bcryptjs.hash(newPassword, 10);
+      await userRepository.updateUser(userId, { password: hashedPassword });
+      return user;
+    } catch (error) {
+      throw new HttpError(400, "Invalid or expired token");
+    }
+  }
+
+  async getMyself(id: string) {
+    const user = await userRepository.getUserCart(id);
+    if (!user) {
+      throw new HttpError(404, "User not found");
+    }
+    return user;
+  }
+
+  async addToCart(userId: string, data: AddToCartDTO) {
+    const updatedUser = await userRepository.addToCart(userId, data);
+
+    if (!updatedUser) {
+      throw new HttpError(404, `User not found ${userId}`);
+    }
+
+    return updatedUser;
   }
 }

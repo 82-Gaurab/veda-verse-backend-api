@@ -17,7 +17,7 @@ export class AdminUserController {
           .json({ success: false, message: z.prettifyError(parsedData.error) });
       }
       if (req.file) {
-        parsedData.data.profilePicture = `/uploads/${req.file.filename}`;
+        parsedData.data.profilePicture = `/uploads/users/${req.file.filename}`;
       }
       const userData: CreateUserDTO = parsedData.data;
       const newUser = await adminUserService.createUser(userData);
@@ -66,7 +66,7 @@ export class AdminUserController {
       }
 
       if (req.file) {
-        parsedData.data.profilePicture = `/uploads/${req.file.filename}`;
+        parsedData.data.profilePicture = `/uploads/users/${req.file.filename}`;
       }
       const updateData: UpdateUserDTO = parsedData.data;
       const updatedUser = await adminUserService.updateUser(userId, updateData);
@@ -110,6 +110,25 @@ export class AdminUserController {
       return res.status(error.statusCode ?? 500).json({
         success: false,
         message: error.message || "Internal Server Error",
+      });
+    }
+  }
+
+  // info: for admin dashboard
+  async getDashboard(req: Request, res: Response) {
+    try {
+      const summary = await adminUserService.getDashboardSummary();
+
+      res.status(200).json({
+        success: true,
+        message: "Dashboard summary fetched successfully",
+        data: summary,
+      });
+    } catch (error: any) {
+      console.error("Dashboard fetch error:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message || "Failed to fetch dashboard summary",
       });
     }
   }

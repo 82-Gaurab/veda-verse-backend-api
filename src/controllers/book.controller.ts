@@ -1,50 +1,25 @@
 import { Request, Response } from "express";
 import { BookService } from "../service/book.service";
-import { CreateBookDTO } from "../dtos/book.dto";
-import z from "zod";
 
 const bookService = new BookService();
 
 export class BookController {
-  async createBook(req: Request, res: Response) {
+  async getAllBooks(req: Request, res: Response): Promise<void> {
     try {
-      const parsedData = CreateBookDTO.safeParse(req.body);
+      const search = req.query.search as string | undefined;
 
-      if (!parsedData.success) {
-        return res
-          .status(404)
-          .json({ error: z.prettifyError(parsedData.error) });
-      }
+      const books = await bookService.getAllBooks(search);
 
-      const bookData: CreateBookDTO = parsedData.data;
-
-      const newBook = await bookService.createBook(bookData);
-
-      return res.status(200).json({
+      res.status(200).json({
         success: true,
-        message: "New Book Created Successfully",
-        data: newBook,
-      });
-    } catch (error: Error | any) {
-      return res.status(error.statusCode ?? 500).json({
-        success: false,
-        message: error.message ?? "Internal Server Error",
-      });
-    }
-  }
-
-  async getAllBooks(req: Request, res: Response) {
-    try {
-      const books = await bookService.getAllBooks();
-      return res.status(200).json({
-        success: true,
-        message: "All book retrieved successfully",
         data: books,
       });
-    } catch (error: Error | any) {
-      return res.status(error.statusCode ?? 500).json({
+    } catch (error) {
+      console.error("Error fetching books:", error);
+
+      res.status(500).json({
         success: false,
-        message: error.message ?? "Internal Server Error",
+        message: "Failed to fetch books",
       });
     }
   }
@@ -53,16 +28,35 @@ export class BookController {
     try {
       const bookId = req.params.id;
       const book = await bookService.getBookById(bookId);
-      return res
-        .status(200)
-        .json({ success: true, message: "Book retrieve successful" });
+      return res.status(200).json({
+        success: true,
+        data: book,
+        message: "Book retrieve successful",
+      });
     } catch (error: Error | any) {
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message ?? "Internal Server Error",
+      });
+    }
+  }
+
+  async getBooksByGenre(req: Request, res: Response) {
+    try {
+      const { genreId } = req.params;
+
+      if (!genreId) {
+        return res.status(400).json({ message: "Genre ID is required" });
+      }
+
+      const books = await bookService.getBooksByGenre(genreId);
+
+      return res.status(200).json({ success: true, data: books });
+    } catch (error) {
+      console.error("Error fetching books by genre:", error);
       return res
-        .status(error.statusCode ?? 500)
-        .json({
-          success: false,
-          message: error.message ?? "Internal Server Error",
-        });
+        .status(500)
+        .json({ success: false, message: "Internal server error" });
     }
   }
 }
