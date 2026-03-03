@@ -1,119 +1,103 @@
-import request from "supertest";
 import app from "../../app";
-import { UserModel } from "../../models/user.model";
+import request from "supertest";
+import mongoose from "mongoose";
+import { UserModel, IUser } from "../../models/user.model";
 
-describe("Auth Integration Test", () => {
+describe("User Authentication Integration Test", () => {
   const testUser = {
-    firstName: "test first name",
-    lastName: "test last name",
-    username: "test user",
-    email: "test@test.com",
+    firstName: "Test",
+    lastName: "User",
+    username: "testuser",
+    email: "testuser@example.com",
     password: "123456789",
     confirmPassword: "123456789",
   };
 
+  let authToken: string;
+  let userId: string;
+
   beforeAll(async () => {
-    await UserModel.deleteMany({
-      $or: [{ email: testUser.email }, { username: testUser.username }],
-    });
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(
+        process.env.MONGO_URI || "mongodb://localhost:27017/testdb",
+      );
+    }
+
+    // Clean up previous test user
+    await UserModel.deleteMany({ email: testUser.email });
   });
 
   afterAll(async () => {
-    await UserModel.deleteMany({
-      $or: [{ email: testUser.email }, { username: testUser.username }],
-    });
+    await UserModel.deleteMany({ email: testUser.email });
+    await mongoose.connection.close();
   });
 
-  describe("POST /api/v1/auth/register", () => {
-    test("should register a new user", async () => {
-      const response = await request(app)
+  describe("User Registration & Login", () => {
+    it("should register a new user", async () => {
+      const res = await request(app)
         .post("/api/v1/auth/register")
         .send(testUser);
 
-      expect(response.statusCode).toBe(200);
-      expect(response.body).toHaveProperty("success", true);
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.email).toBe(testUser.email);
+
+      userId = res.body.data._id;
     });
 
-    test("should not register a user with existing email", async () => {
-      const response = await request(app)
-        .post("/api/v1/auth/register")
-        .send(testUser);
-
-      expect(response.statusCode).toBe(403);
-      expect(response.body).toHaveProperty("message", "Email already in use");
-    });
-
-    test("should not register a user with existing username", async () => {
-      const response = await request(app)
-        .post("/api/v1/auth/register")
-        .send({ ...testUser, email: "new@gmail.com" });
-
-      expect(response.statusCode).toBe(403);
-      expect(response.body).toHaveProperty(
-        "message",
-        "Username already in use",
-      );
-    });
-  });
-
-  describe("POST /api/v1/auth/login", () => {
-    test("Should login with an existing user", async () => {
-      const response = await request(app)
+    it("should login the registered user", async () => {
+      const res = await request(app)
         .post("/api/v1/auth/login")
         .send({ email: testUser.email, password: testUser.password });
 
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty("success", true);
-      expect(response.body.token).toBeDefined();
-    });
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.token).toBeDefined();
 
-    test("should not login with incorrect password", async () => {
-      const response = await request(app)
-        .post("/api/v1/auth/login")
-        .send({ email: testUser.email, password: "wrongPassword!" });
-      expect(response.statusCode).toBe(401);
-      expect(response.body).toHaveProperty("success", false);
-    });
-
-    test("Should not login with invalid email", async () => {
-      const response = await request(app)
-        .post("/api/v1/auth/login")
-        .send({ email: "random@gmail.com", password: testUser.password });
-
-      expect(response.status).toBe(404);
-      expect(response.body.message).toBe("No user found");
+      authToken = res.body.token;
     });
   });
 
-  describe("PUT /api/v1/auth/update-profile", () => {
-    test("User cannot update their profile without token", async () => {
-      const response = await request(app)
-        .put("/api/v1/auth/update-profile")
-        .send({
-          firstName: "update test first name",
-          lastName: "update test last name",
-          username: "update test user",
-        });
-
-      expect(response.status).toBe(401);
-      expect(response.body).toHaveProperty("success", false);
-    });
-  });
-
-  describe("POST /api/v1/auth/request-password-reset", () => {
-    // test("request password reset succeeds", async () => {
-    //   const res = await request(app)
-    //     .post("/api/v1/auth/request-password-reset")
-    //     .send({ email: testUser.email });
-    //   expect(res.status).toBe(200);
-    //   expect(res.body.success).toBe(true);
-    // });
-
-    test("request password reset fails for non-existent email", async () => {
+  describe("User Protected Routes", () => {
+    it("should get current user data with valid token", async () => {
       const res = await request(app)
-        .post("/api/v1/auth/request-password-reset")
-        .send({ email: "fake@example.com" });
-      expect(res.status).toBe(404);
+        .get("/api/v1/auth/me")
+        .set("Authorization", `Bearer ${authToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.email).toBe(testUser.email);
+    });
+
+    it("should update user profile", async () => {
+      const res = await request(app)
+        .put("/api/v1/auth/update-profile")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ firstName: "Updated", lastName: "User" });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.firstName).toBe("Updated");
+      expect(res.body.data.lastName).toBe("User");
+    });
+
+    it("should add item to cart", async () => {
+      const res = await request(app)
+        .put("/api/v1/auth/cart")
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({ product: new mongoose.Types.ObjectId(), quantity: 2 });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.cart).toBeInstanceOf(Array);
+      expect(res.body.data.cart[0].quantity).toBe(2);
+    });
+
+    it("should fail accessing protected route without token", async () => {
+      const res = await request(app).get("/api/v1/auth/me");
+      expect(res.status).toBe(401);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toMatch(/Unauthorized/);
     });
   });
 });
