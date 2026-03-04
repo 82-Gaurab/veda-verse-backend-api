@@ -25,13 +25,24 @@ describe("Admin Integration Test", () => {
     confirmPassword: "123456789",
   };
 
+  const adminCreateUser = {
+    firstName: "test first name",
+    lastName: "test last name",
+    username: "test5 user",
+    email: "test125@test.com",
+    password: "123456789",
+    confirmPassword: "123456789",
+  };
+
   let authToken: string;
   let adminToken: string;
 
   beforeAll(async () => {
     // Clean up both admin and normal test users
     await UserModel.deleteMany({
-      email: { $in: [adminTestUser.email, normalTestUser.email] },
+      email: {
+        $in: [adminTestUser.email, normalTestUser.email, adminCreateUser.email],
+      },
     });
 
     // Create admin
@@ -57,7 +68,9 @@ describe("Admin Integration Test", () => {
   afterAll(async () => {
     // Clean up both users
     await UserModel.deleteMany({
-      email: { $in: [adminTestUser.email, normalTestUser.email] },
+      email: {
+        $in: [adminTestUser.email, normalTestUser.email, adminCreateUser.email],
+      },
     });
     await mongoose.connection.close();
   });
@@ -87,14 +100,7 @@ describe("Admin Integration Test", () => {
     test("admin can create a user", async () => {
       const res = await request(app)
         .post("/api/v1/admin/users")
-        .send({
-          firstName: "test5 first name",
-          lastName: "test5 last name",
-          username: "test5 user",
-          email: "test125@test.com",
-          password: "123456789",
-          confirmPassword: "123456789",
-        })
+        .send(adminCreateUser)
         .set("Authorization", `Bearer ${adminToken}`);
 
       expect(res.status).toBe(201);
