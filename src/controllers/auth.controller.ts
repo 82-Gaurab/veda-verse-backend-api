@@ -4,6 +4,8 @@ import {
   AddToCartDTO,
   CreateUserDTO,
   LoginUserDTO,
+  RemoveCartItemDTO,
+  UpdateCartQuantityDTO,
   UpdateUserDTO,
 } from "../dtos/user.dto";
 import z from "zod";
@@ -206,6 +208,76 @@ export class AuthController {
         data: updatedUser,
       });
     } catch (error: Error | any) {
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
+    }
+  }
+
+  async updateCartQuantity(req: Request, res: Response) {
+    try {
+      if (!req.user) {
+        return res
+          .status(401)
+          .json({ success: false, message: "Unauthorized" });
+      }
+
+      const userId = req.user._id;
+
+      const parsedData = UpdateCartQuantityDTO.safeParse(req.body);
+      if (!parsedData.success) {
+        return res
+          .status(400)
+          .json({ success: false, message: z.prettifyError(parsedData.error) });
+      }
+
+      const updatedUser = await userService.updateCartQuantity(
+        userId,
+        parsedData.data,
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Cart updated successfully",
+        data: updatedUser,
+      });
+    } catch (error: any) {
+      return res.status(error.statusCode ?? 500).json({
+        success: false,
+        message: error.message || "Internal Server Error",
+      });
+    }
+  }
+
+  async removeCartItem(req: Request, res: Response) {
+    try {
+      if (!req.user) {
+        return res
+          .status(401)
+          .json({ success: false, message: "Unauthorized" });
+      }
+
+      const userId = req.user._id;
+
+      const parsedData = RemoveCartItemDTO.safeParse(req.body);
+      if (!parsedData.success) {
+        return res
+          .status(400)
+          .json({ success: false, message: z.prettifyError(parsedData.error) });
+      }
+
+      const updatedUser = await userService.removeCartItem(
+        userId,
+        parsedData.data.product,
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Item removed from cart",
+        data: updatedUser,
+      });
+    } catch (error: any) {
       return res.status(error.statusCode ?? 500).json({
         success: false,
         message: error.message || "Internal Server Error",

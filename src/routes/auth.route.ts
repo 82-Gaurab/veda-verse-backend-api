@@ -18,7 +18,19 @@ router.put(
 
 router.get("/me", authorizedMiddleware, authController.getMyData);
 
+//info: cart
 router.put("/cart", authorizedMiddleware, authController.addToCart);
+router.patch(
+  "/cart/update-quantity",
+  authorizedMiddleware,
+  authController.updateCartQuantity,
+);
+
+router.delete(
+  "/cart/remove",
+  authorizedMiddleware,
+  authController.removeCartItem,
+);
 
 router.post(
   "/upload-image",

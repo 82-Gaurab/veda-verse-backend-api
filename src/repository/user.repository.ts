@@ -125,4 +125,35 @@ export class UserRepository implements IUserRepository {
   async clearCart(userId: string) {
     await UserModel.findByIdAndUpdate(userId, { $set: { cart: [] } });
   }
+
+  async updateCartQuantity(
+    userId: string,
+    data: { product: string; quantity: number },
+  ): Promise<IUser | null> {
+    return await UserModel.findOneAndUpdate(
+      {
+        _id: userId,
+        "cart.bookId": data.product,
+      },
+      {
+        $set: { "cart.$.quantity": data.quantity },
+      },
+      { new: true },
+    );
+  }
+
+  async removeCartItem(
+    userId: string,
+    productId: string,
+  ): Promise<IUser | null> {
+    return await UserModel.findByIdAndUpdate(
+      userId,
+      {
+        $pull: {
+          cart: { bookId: productId },
+        },
+      },
+      { new: true },
+    );
+  }
 }

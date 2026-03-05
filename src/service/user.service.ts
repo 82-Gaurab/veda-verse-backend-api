@@ -3,6 +3,7 @@ import {
   AddToCartDTO,
   CreateUserDTO,
   LoginUserDTO,
+  UpdateCartQuantityDTO,
   UpdateUserDTO,
 } from "../dtos/user.dto";
 import bcryptjs from "bcryptjs";
@@ -164,11 +165,32 @@ export class UserService {
     return user;
   }
 
+  //info: Cart
   async addToCart(userId: string, data: AddToCartDTO) {
     const updatedUser = await userRepository.addToCart(userId, data);
 
     if (!updatedUser) {
       throw new HttpError(404, `User not found ${userId}`);
+    }
+
+    return updatedUser;
+  }
+
+  async updateCartQuantity(userId: string, data: UpdateCartQuantityDTO) {
+    const updatedUser = await userRepository.updateCartQuantity(userId, data);
+
+    if (!updatedUser) {
+      throw new HttpError(404, "User or cart item not found");
+    }
+
+    return updatedUser;
+  }
+
+  async removeCartItem(userId: string, productId: string) {
+    const updatedUser = await userRepository.removeCartItem(userId, productId);
+
+    if (!updatedUser) {
+      throw new HttpError(404, "User or cart item not found");
     }
 
     return updatedUser;
