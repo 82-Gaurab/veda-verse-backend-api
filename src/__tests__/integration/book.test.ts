@@ -1,72 +1,90 @@
-import request from "supertest";
 import app from "../../app";
-import { UserModel } from "../../models/user.model";
+import request from "supertest";
+import mongoose from "mongoose";
+import { BookModel, IBook } from "../../models/book.model";
 
-describe("Book Integration Test", () => {
-  const testBook = {
-    id: "101",
-    title: "Flow",
-  };
+describe("Public Book Routes Integration Test", () => {
+  let bookId: string;
+  let genreId: mongoose.Types.ObjectId;
 
   beforeAll(async () => {
-    UserModel.deleteMany({
-      $or: [{ id: testBook.id }],
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(
+        process.env.MONGO_URI || "mongodb://localhost:27017/testdb",
+      );
+    }
+
+    // Clean up existing books
+    await BookModel.deleteMany({});
+
+    // Insert a sample book
+    genreId = new mongoose.Types.ObjectId();
+    const book: IBook = await BookModel.create({
+      title: "Test Book",
+      author: "John Doe",
+      description: "A test book description",
+      genre: [genreId],
+      price: 19.99,
+      stockAmount: 10,
+      publishedYear: "2023",
+      coverImg: "cover.jpg",
     });
+
+    bookId = book._id.toString();
   });
 
   afterAll(async () => {
-    UserModel.deleteMany({
-      $or: [{ id: testBook.id }],
+    await BookModel.deleteMany({});
+    await mongoose.connection.close();
+  });
+
+  describe("GET /api/v1/books", () => {
+    test("should fetch all books", async () => {
+      const res = await request(app).get("/api/v1/books");
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(Array.isArray(res.body.data)).toBe(true);
+      expect(res.body.data.length).toBeGreaterThan(0);
+    });
+
+    test("should fetch books with search query", async () => {
+      const res = await request(app).get("/api/v1/books?search=Test");
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(Array.isArray(res.body.data)).toBe(true);
+      expect(res.body.data[0].title).toContain("Test");
     });
   });
 
-  describe("POST /api/v1/books", () => {
-    test("Should create a new book", async () => {
-      const response = await request(app).post("/api/v1/books/").send(testBook);
+  describe("GET /api/v1/books/:id", () => {
+    test("should fetch a book by its ID", async () => {
+      const res = await request(app).get(`/api/v1/books/${bookId}`);
 
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty("success", true);
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data._id).toBe(bookId);
+      expect(res.body.data.title).toBe("Test Book");
     });
 
-    test("should not create a book with existing id", async () => {
-      const response = await request(app)
-        .post("/api/v1/books/")
-        .send({ ...testBook, title: "MockingBird" });
-
-      expect(response.status).toBe(403);
-      expect(response.body).toHaveProperty("message", "Book ID already exists");
-      expect(response.body).toHaveProperty("success", false);
-    });
-
-    test("should not create a book without an id", async () => {
-      const response = await request(app)
-        .post("/api/v1/books/")
-        .send({ title: "MockingBird" });
-
-      expect(response.status).toBe(404);
+    test("should return 500 for invalid ID", async () => {
+      const res = await request(app).get("/api/v1/books/invalidId");
+      expect(res.status).toBe(500);
+      expect(res.body.success).toBe(false);
     });
   });
 
-  describe("GET /api/v1/books/", () => {
-    test("should retrieve all books", async () => {
-      const response = await request(app).get("/api/v1/books/");
+  describe("GET /api/v1/books/genre/:genreId", () => {
+    test("should fetch books by genre ID", async () => {
+      const res = await request(app).get(
+        `/api/v1/books/genre/${genreId.toString()}`,
+      );
 
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty("success", true);
-    });
-
-    test("should retrieve book by id", async () => {
-      const response = await request(app).get(`/api/v1/books/${testBook.id}`);
-
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty("success", true);
-    });
-
-    test("should not retrieve book of an invalid id", async () => {
-      const response = await request(app).get(`/api/v1/books/987987`);
-
-      expect(response.status).toBe(404);
-      expect(response.body).toHaveProperty("success", false);
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(Array.isArray(res.body.data)).toBe(true);
+      expect(res.body.data.length).toBeGreaterThan(0);
     });
   });
 });

@@ -86,7 +86,7 @@ export class AdminUserService {
     ] = await Promise.all([
       UserModel.countDocuments(),
       BookModel.countDocuments(),
-      BookModel.countDocuments({ stock: { $lte: 5 } }),
+      BookModel.countDocuments({ stockAmount: { $lte: 5 } }),
       OrderModel.countDocuments(),
       OrderModel.countDocuments({ status: "pending" }),
       ReviewModel.countDocuments(),

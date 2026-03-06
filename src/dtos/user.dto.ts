@@ -33,3 +33,15 @@ export type AddToCartDTO = z.infer<typeof AddToCartDTO>;
 // all fields optional for update
 export const UpdateUserDTO = UserSchema.partial();
 export type UpdateUserDTO = z.infer<typeof UpdateUserDTO>;
+
+export const UpdateCartQuantityDTO = z.object({
+  product: z.string(),
+  quantity: z.number().min(1),
+});
+
+export const RemoveCartItemDTO = z.object({
+  product: z.string(),
+});
+
+export type UpdateCartQuantityDTO = z.infer<typeof UpdateCartQuantityDTO>;
+export type RemoveCartItemDTO = z.infer<typeof RemoveCartItemDTO>;
